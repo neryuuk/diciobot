@@ -6,8 +6,10 @@ O Diciobot consulta o [Dicio - Dicionário Online de Português], composto por d
 Ao usar o conteúdo fornecido através do DicioBot você concorda com os [termos de uso do Dicio].
 
 Utiliza o wrapper em Python feito por [Leandro Toledo]
-
+(com apoio de [Rafael Melo] e [Felipe Santos])
 [@diciobot]: <https://telegram.me/diciobot>
 [Dicio - Dicionário Online de Português]: <http://www.dicio.com.br/>
 [termos de uso do Dicio]: <http://www.dicio.com.br/termos_de_uso.html>
-[leandro toledo]: <https://github.com/leandrotoledo/python-telegram-bot>
+[Leandro Toledo]: <https://github.com/leandrotoledo/python-telegram-bot>
+[Rafael Melo]: <https://github.com/rafamelo12>
+[Felipe Santos]: <https://github.com/fesoliveira014>
