@@ -1,8 +1,13 @@
-# diciobot
-https://telegram.me/diciobot
+# DicioBot
+Disponível em [@diciobot]
 
-O Diciobot consulta um dicionário de Língua Portuguesa contemporânea, composto por definições, significados, exemplos e rimas que caracterizam mais de 400.000 palavras e verbetes.
-http://www.dicio.com.br/
+O Diciobot consulta o [Dicio - Dicionário Online de Português], composto por definições, significados, exemplos e rimas que caracterizam mais de 400.000 palavras e verbetes.
 
-Ao usar o conteúdo fornecido através do DicioBot você concorda com os termos de uso do Dicio, disponíveis em:
-http://www.dicio.com.br/termos_de_uso.html
+Ao usar o conteúdo fornecido através do DicioBot você concorda com os [termos de uso do Dicio].
+
+Utiliza o wrapper em Python feito por [Leandro Toledo]
+
+[@diciobot]: <https://telegram.me/diciobot>
+[Dicio - Dicionário Online de Português]: <http://www.dicio.com.br/>
+[termos de uso do Dicio]: <http://www.dicio.com.br/termos_de_uso.html>
+[leandro toledo]: <https://github.com/leandrotoledo/python-telegram-bot>
