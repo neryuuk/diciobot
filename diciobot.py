@@ -114,24 +114,68 @@ class DicioBot():
         return tudo
 
     def definirVerbete(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem significado disponível._"
+        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem definição ou significado disponíveis._"
         pagina, url = self.obterPagina(verbete)
         arvore = html.fromstring(pagina.text)
         if pagina.status_code == 404:
             return self.quatroZeroQuatro(arvore, verbete)
+        titulos_def = arvore.xpath('//*[@class="tit-section"]/text()')
+        for each in titulos_def:
+            if 'Definição' in each:
+                titulo_def = each.split(' ')
+        if len(titulo_def) == 0:
+            significado = ''
+        else:
+            significado = '*' + ' '.join(titulo_def[:-1]) + '* _' + titulo_def[-1] + "_\n"
+            definicao = arvore.xpath('//*[@class="adicional"][1]//node()')
+            for each in definicao:
+                if type(each) == html.HtmlElement:
+                    if each.tag == "br":
+                        significado += "\n"
+                else:
+                    significado += each
+            significado += "\n"
         titulo = arvore.xpath('//*[@id="tit-significado"]/text()')
-        if len(titulo) == 0:
+        if len(titulo) + len(significado) == 0:
             return naoDisponivel
+        elif len(titulo) == 0:
+            significado += "Significado: Não encontrado.\n"
+            significado += "\n*Fonte:* " + url.replace("_", "\_")
+            return significado.replace("\n ","\n")
         titulo = ''.join(arvore.xpath('//*[@id="tit-significado"]/text()')).split(' ')
         titulo = '*' + ' '.join(titulo[:-1]) + '* _' + titulo[-1] + '_'
-        elemento = arvore.xpath('//*[@id="significado"]/text()')
-        significado = titulo + "\n"
-        n = 1
-        for cada in elemento:
-            significado += '*' + str(n) + '.* ' + cada.strip() + "\n"
-            n += 1
-        significado += "\n*Fonte:* " + url
-        return significado
+        elemento = arvore.xpath('//*[@id="significado"]//node()')
+        significado += titulo + "\n"
+        for each in elemento:
+            if type(each) == html.HtmlElement:
+                if each.tag == "br":
+                    significado += "\n"
+            else:
+                significado += each.replace("*", "\*")
+        significado += "\n\n*Fonte:* " + url.replace("_", "\_")
+        return significado.replace("\n ","\n")
+
+    def obterRimas(self, verbete):
+        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem rimas disponíveis._"
+        pagina, url = self.obterPagina(verbete)
+        arvore = html.fromstring(pagina.text)
+        if pagina.status_code == 404:
+            return self.quatroZeroQuatro(arvore, verbete)
+        titulos = arvore.xpath('//*[@class="tit-other"]/text()')
+        titulo = ''
+        for each in titulos:
+            if 'Rimas' in each:
+                titulo = each.split(' ')
+        if len(titulo) == 0:
+            return naoDisponivel
+        titulo = '*' + ' '.join(titulo[:-1]) + '* _' + titulo[-1] + '_'
+        rimas = titulo + "\n"
+        elemento = arvore.xpath('//*[@class="list col-4 small"][1]/li/text()')
+        if len(elemento) > 1:
+            rimas += '_' + ', '.join(elemento[:-1]) + '_ e '
+        rimas += '_' + elemento[-1] + "_\n"
+        rimas += "\n*Fonte:* " + url
+        return rimas
 
     def conjugarVerbo(self, verbo):
         naoDisponivel = "_O verbete_ *" + verbo + "* _não tem conjugação disponível._"
@@ -161,28 +205,6 @@ class DicioBot():
     def obterAnagramas(self, verbete):
         anagramas = verbete
         return anagramas
-
-    def obterRimas(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem rimas disponíveis._"
-        pagina, url = self.obterPagina(verbete)
-        arvore = html.fromstring(pagina.text)
-        if pagina.status_code == 404:
-            return self.quatroZeroQuatro(arvore, verbete)
-        titulos = arvore.xpath('//*[@class="tit-other"]/text()')
-        titulo = ''
-        for each in titulos:
-            if 'Rimas' in each:
-                titulo = each.split(' ')
-        if len(titulo) == 0:
-            return naoDisponivel
-        titulo = '*' + ' '.join(titulo[:-1]) + '* _' + titulo[-1] + '_'
-        rimas = titulo + "\n"
-        elemento = arvore.xpath('//*[@class="list col-4 small"][1]/li/text()')
-        if len(elemento) > 1:
-            rimas += '_' + ', '.join(elemento[:-1]) + '_ e '
-        rimas += '_' + elemento[-1] + "_\n"
-        rimas += "\n*Fonte:* " + url
-        return rimas
 
     def obterExemplos(self, verbete):
         exemplos = verbete
