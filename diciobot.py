@@ -8,16 +8,17 @@ from lxml import html, etree
 
 class DicioBot():
     options = ["start","help","ajuda","d","definir","s","sinonimos",\
-               "r","rimas","ana","anagramas","c","conjugar"]
+               "r","rimas","ana","anagramas","c","conjugar","dia"]
     helpMessage = """As opções *disponíveis* são as _seguintes_:
 
 /definir ou /d - Obter a *definição* de um _verbete_;
 /sinonimos ou /s - Obter *sinônimos* de um _verbete_;
 /rimas ou /r - Obter *rimas* de um _verbete_;
 /anagramas ou /ana - Obter *anagramas* de um _verbete_;
-/conjugar ou /c - *Conjugar* um _verbo_.
+/conjugar ou /c - *Conjugar* um _verbo_;
+/dia - *Palavra do dia*.
     """
-    default_url = 'http://www.dicio.com.br/VERBETE/'
+    default_url = 'http://www.dicio.com.br/'
 
     def __init__(self):
         """() -> ()
@@ -91,6 +92,10 @@ class DicioBot():
                                     msg_text = self.conjugarVerbo(arguments)
                                     self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
 
+                            elif command == '/dia':
+                                msg_text = self.palavraDoDia()
+                                self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
+
                             elif command in ['/a','/antonimos']:
                                 if noArgument:
                                     pass
@@ -157,7 +162,6 @@ class DicioBot():
                     significado += "\n"
             else:
                 significado += each.replace("*", "\*")
-        significado += "\n\n*Fonte:* " + url.replace("_", "\_")
         return significado.replace("\n ","\n") + fonte
 
     def obterSinonimos(self, verbete):
@@ -272,6 +276,14 @@ class DicioBot():
                 conjugacao += "\n"
         return conjugacao.replace("\n ","\n") + fonte
 
+    def palavraDoDia(self):
+        pagina, url = self.obterPagina("")
+        arvore = html.fromstring(pagina.text)
+        doDia = arvore.xpath('//*[@id="dia"]/a/text()')[0]
+        definir = self.definirVerbete(doDia)
+        doDia = "*Palavra do dia:* _" + doDia + "_\n\n"
+        return doDia + definir
+
     def obterAntonimos(self, verbete):
         pass
 
@@ -291,7 +303,7 @@ class DicioBot():
     def obterPagina(self, verbete):
         # Receita obtida em http://wiki.python.org.br/RemovedorDeAcentos
         sem_acento = normalize('NFKD', verbete).encode('ASCII','ignore').decode('ASCII').lower()
-        url = DicioBot.default_url.replace("VERBETE", sem_acento)
+        url = DicioBot.default_url + sem_acento
         pagina = requests.get(url)
         return pagina, url
 
