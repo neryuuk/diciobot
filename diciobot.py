@@ -171,10 +171,14 @@ class DicioBot():
         if len(sinonimos) == 0:
             return naoDisponivel
         sinonimos = '*' + ' '.join(sinonimos[:-1]) + '* _' + sinonimos[-1] + "_\n"
-        elemento = arvore.xpath('//*[@class="adicional mobreak"]/span//node()')
+        elemento = arvore.xpath('//*[@class="adicional cols"]/span//node()')
+        listaSinonimos = []
         for each in elemento:
             if type(each) != html.HtmlElement:
-                sinonimos += each
+                listaSinonimos.append('_' + each + '_')
+        if len(listaSinonimos) > 1:
+            sinonimos += ', '.join(listaSinonimos[:-1]) + ' e '
+        sinonimos += listaSinonimos[-1]
         sinonimos += "\n\n*Fonte:* " + url.replace("_", "\_")
         return sinonimos
 
@@ -206,7 +210,7 @@ class DicioBot():
         pagina, url = self.obterPagina(verbo)
         arvore = html.fromstring(pagina.text)
         if pagina.status_code == 404:
-            return self.quatroZeroQuatro(arvore, verbete, True)
+            return self.quatroZeroQuatro(arvore, verbo, True)
         conjugacoes = arvore.xpath('//*[@id="conjugacao"]//node()')
         if len(conjugacoes) == 0:
             return naoDisponivel
