@@ -3,7 +3,6 @@
 import requests
 import telegram
 import configparser
-from unicodedata import normalize
 from lxml import html
 
 
@@ -23,7 +22,6 @@ class Diciobot():
 /anagramas ou /ana - Obter *anagramas* de um _verbete_;
 /conjugar ou /c - *Conjugar* um _verbo_;
 /dia - *Palavra do dia*."""
-    default_url = 'http://www.dicio.com.br/'
 
     def __init__(self):
         """() -> ()
@@ -55,11 +53,12 @@ class Diciobot():
 
                     if(message.startswith('/')):
                         command, _, arguments = message.partition(' ')
+                        command = command.lower()
                         if command[1:] in Diciobot.options:
                             noArgument = arguments == ''
                             text = "A utilização correta é "
                             text += command + " _verbete_."
-                            if command == '/start':
+                            if command in ['/start']:
                                 self.bot.sendMessage(chat_id=chat_id,
                                                      text="Vamos *começar*?",
                                                      parse_mode="Markdown")
@@ -80,7 +79,7 @@ class Diciobot():
                                         parse_mode="Markdown",
                                         reply_to_message_id=message_id)
                                 else:
-                                    text = self.definirVerbete(arguments)
+                                    text = self.definir(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=text,
@@ -96,7 +95,7 @@ class Diciobot():
                                         parse_mode="Markdown",
                                         reply_to_message_id=message_id)
                                 else:
-                                    text = self.obterSinonimos(arguments)
+                                    text = self.sinonimos(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=text,
@@ -112,7 +111,7 @@ class Diciobot():
                                         parse_mode="Markdown",
                                         reply_to_message_id=message_id)
                                 else:
-                                    text = self.obterRimas(arguments)
+                                    text = self.rimas(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=text,
@@ -128,7 +127,7 @@ class Diciobot():
                                         parse_mode="Markdown",
                                         reply_to_message_id=message_id)
                                 else:
-                                    text = self.obterAnagramas(arguments)
+                                    text = self.anagramas(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=text,
@@ -145,7 +144,7 @@ class Diciobot():
                                         parse_mode="Markdown",
                                         reply_to_message_id=message_id)
                                 else:
-                                    text = self.conjugarVerbo(arguments)
+                                    text = self.conjugar(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=text,
@@ -153,7 +152,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command == '/dia':
+                            elif command in ['/dia']:
                                 text = self.palavraDoDia()
                                 self.bot.sendMessage(
                                     chat_id=chat_id,
@@ -194,18 +193,23 @@ class Diciobot():
 
                     self.lastUpdate = update.update_id + 1
 
-    def obterTudo(self, verbete):
+    def tudo(self, verbete):
+        # definicao = self.definir(verbete)
+        # sinonimos = self.sinonimos(verbete)
+        # rimas = self.rimas(verbete)
+        # anagramas = self.anagramas(verbete)
+        # conjugacoes = self.conjugar(verbete)
         pass
 
-    def definirVerbete(self, verbete):
+    def definir(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
         naoDisponivel += "* _não tem definição ou significado disponíveis._"
-        pagina, url = self.obterPagina(verbete)
-        fonte = "\n\n*Fonte:* " + url.replace("_", "\_")
-        arvore = html.fromstring(pagina.text)
+        pagina, sugestao = self.buscar(verbete)
         if pagina.status_code == 404:
-            return self.quatroZeroQuatro(arvore, verbete)
-        titulos_def = arvore.xpath('//*[@class="tit-section"]/text()')
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulos_def = tree.xpath('//*[@class="tit-section"]/text()')
         titulo_def = ""
         for each in titulos_def:
             if 'Definição' in each:
@@ -215,7 +219,7 @@ class Diciobot():
         else:
             significado = '*' + ' '.join(titulo_def[:-1])
             significado += '* _' + titulo_def[-1] + "_\n"
-            definicao = arvore.xpath('//*[@class="adicional"][1]//node()')
+            definicao = tree.xpath('//*[@class="adicional"][1]//node()')
             for each in definicao:
                 if type(each) == html.HtmlElement:
                     if each.tag == "br":
@@ -223,16 +227,16 @@ class Diciobot():
                 else:
                     significado += each
             significado += "\n"
-        titulo = arvore.xpath('//*[@id="tit-significado"]/text()')
+        titulo = tree.xpath('//*[@id="tit-significado"]/text()')
         if len(titulo) + len(significado) == 0:
             return naoDisponivel
         elif len(titulo) == 0:
             significado += "Significado: Não encontrado."
             return significado.replace("\n ", "\n") + fonte
-        titulo = ''.join(arvore.xpath('//*[@id="tit-significado"]/text()'))
+        titulo = ''.join(tree.xpath('//*[@id="tit-significado"]/text()'))
         titulo = titulo.split(' ')
         titulo = '*' + ' '.join(titulo[:-1]) + '* _' + titulo[-1] + '_'
-        elemento = arvore.xpath('//*[@id="significado"]//node()')
+        elemento = tree.xpath('//*[@id="significado"]//node()')
         significado += titulo + "\n"
         for each in elemento:
             if type(each) == html.HtmlElement:
@@ -242,15 +246,15 @@ class Diciobot():
                 significado += each.replace("*", "\*")
         return significado.replace("\n ", "\n") + fonte
 
-    def obterSinonimos(self, verbete):
+    def sinonimos(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
         naoDisponivel += "* _não tem sinônimos disponíveis._"
-        pagina, url = self.obterPagina(verbete)
-        fonte = "\n\n*Fonte:* " + url.replace("_", "\_")
-        arvore = html.fromstring(pagina.text)
+        pagina, sugestao = self.buscar(verbete)
         if pagina.status_code == 404:
-            return self.quatroZeroQuatro(arvore, verbete)
-        titulos = arvore.xpath('//*[@class="tit-section"]/text()')
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulos = tree.xpath('//*[@class="tit-section"]/text()')
         sinonimos = ''
         for each in titulos:
             if 'Sinônimos' in each:
@@ -259,7 +263,7 @@ class Diciobot():
             return naoDisponivel + fonte
         sinonimos = '*' + ' '.join(sinonimos[:-1]) + '* _' + sinonimos[-1]
         sinonimos += "_\n"
-        elemento = arvore.xpath('//*[@class="adicional cols"]/span//node()')
+        elemento = tree.xpath('//*[@class="adicional cols"]/span//node()')
         listaSinonimos = []
         for each in elemento:
             if type(each) != html.HtmlElement:
@@ -269,15 +273,15 @@ class Diciobot():
         sinonimos += listaSinonimos[-1]
         return sinonimos + fonte
 
-    def obterRimas(self, verbete):
+    def rimas(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
         naoDisponivel += "* _não tem rimas disponíveis._"
-        pagina, url = self.obterPagina(verbete)
-        fonte = "\n\n*Fonte:* " + url
-        arvore = html.fromstring(pagina.text)
+        pagina, sugestao = self.buscar(verbete)
         if pagina.status_code == 404:
-            return self.quatroZeroQuatro(arvore, verbete)
-        titulos = arvore.xpath('//*[@class="tit-other"]/text()')
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulos = tree.xpath('//*[@class="tit-other"]/text()')
         rimas = ''
         for each in titulos:
             if 'Rimas' in each:
@@ -285,21 +289,21 @@ class Diciobot():
         if len(rimas) == 0:
             return naoDisponivel + fonte
         rimas = '*' + ' '.join(rimas[:-1]) + '* _' + rimas[-1] + "_\n"
-        elemento = arvore.xpath('//*[@class="list col-4 small"][1]/li/text()')
+        elemento = tree.xpath('//*[@class="list col-4 small"][1]/li/text()')
         if len(elemento) > 1:
             rimas += '_' + ', '.join(elemento[:-1]) + '_ e '
         rimas += '_' + elemento[-1] + "_"
         return rimas + fonte
 
-    def obterAnagramas(self, verbete):
+    def anagramas(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
         naoDisponivel += "* _não tem anagramas disponíveis._"
-        pagina, url = self.obterPagina(verbete)
-        fonte = "\n\n*Fonte:* " + url
-        arvore = html.fromstring(pagina.text)
+        pagina, sugestao = self.buscar(verbete)
         if pagina.status_code == 404:
-            return self.quatroZeroQuatro(arvore, verbete)
-        titulos = arvore.xpath('//*[@class="tit-other"]/text()')
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulos = tree.xpath('//*[@class="tit-other"]/text()')
         anagramas = ''
         for each in titulos:
             if 'Anagramas' in each:
@@ -308,31 +312,31 @@ class Diciobot():
             return naoDisponivel + fonte
         anagramas = '*' + ' '.join(anagramas[:-1]) + '* _' + anagramas[-1]
         anagramas += "_\n"
-        elemento = arvore.xpath('//*[@class="list col-4 small"][2]/li/text()')
+        elemento = tree.xpath('//*[@class="list col-4 small"][2]/li/text()')
         if len(elemento) > 1:
             anagramas += '_' + ', '.join(elemento[:-1]) + '_ e '
         anagramas += '_' + elemento[-1] + "_"
         return anagramas + fonte
 
-    def conjugarVerbo(self, verbo):
+    def conjugar(self, verbo):
         naoDisponivel = "_O verbete_ *" + verbo
         naoDisponivel += "* _não tem conjugação disponível._"
         naoDisponivel += "\n_Tente um verbo no_ *infinitivo*."
-        pagina, url = self.obterPagina(verbo)
-        fonte = "*Fonte:* " + url.replace("_", "\_")
-        arvore = html.fromstring(pagina.text)
+        pagina, sugestao = self.buscar(verbo)
         if pagina.status_code == 404:
-            return self.quatroZeroQuatro(arvore, verbo, True)
-        conjugacoes = arvore.xpath('//*[@id="conjugacao"]//node()')
+            return self.quatroZeroQuatro(verbo, sugestao, True)
+        fonte = "*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        conjugacoes = tree.xpath('//*[@id="conjugacao"]//node()')
         if len(conjugacoes) == 0:
             return naoDisponivel + "\n\n" + fonte
-        titulos = arvore.xpath('//*[@class="tit-other"]/text()')
+        titulos = tree.xpath('//*[@class="tit-other"]/text()')
         for each in titulos:
             if 'Conjugação' in each:
                 conjugacao = each.split(' ')
         conjugacao = '*' + ' '.join(conjugacao[:-1]) + '* _' + conjugacao[-1]
         conjugacao += "_\n"
-        def_verbo = arvore.xpath('//*[@id="conjugacao"]/p//node()')
+        def_verbo = tree.xpath('//*[@id="conjugacao"]/p//node()')
         for each in def_verbo:
             if type(each) == html.HtmlElement:
                 if each.tag == "br":
@@ -340,8 +344,8 @@ class Diciobot():
             else:
                 conjugacao += each.replace("*", "\*")
         conjugacao += "\n"
-        modos_nome = arvore.xpath('//*[@class="modo"]//text()')
-        verb_wrapper = arvore.xpath('//*[@class="verb-wrapper"]/ul')
+        modos_nome = tree.xpath('//*[@class="modo"]//text()')
+        verb_wrapper = tree.xpath('//*[@class="verb-wrapper"]/ul')
         modos = []
         for each in verb_wrapper:
             modos.append(each.findall('li'))
@@ -361,36 +365,61 @@ class Diciobot():
         return conjugacao.replace("\n ", "\n") + fonte
 
     def palavraDoDia(self):
-        pagina, url = self.obterPagina("")
-        arvore = html.fromstring(pagina.text)
-        doDia = arvore.xpath('//*[@id="dia"]/a/text()')[0]
-        definir = self.definirVerbete(doDia)
+        pagina = requests.get("http://www.dicio.com.br")
+        tree = html.fromstring(pagina.text)
+        doDia = tree.xpath('//*[@id="dia"]/a/text()')[0]
+        definir = self.definir(doDia)
         doDia = "*Palavra do dia:* _" + doDia + "_\n\n"
         return doDia + definir
 
-    def obterAntonimos(self, verbete):
+    def antonimos(self, verbete):
         pass
 
-    def obterExemplos(self, verbete):
+    def exemplos(self, verbete):
         pass
 
-    def quatroZeroQuatro(self, arvore, verbete, verbo=False):
+    def quatroZeroQuatro(self, verbete, sugestao, verbo=False):
         naoEncontrado = "_O verbete_ *" + verbete + "* _não foi encontrado._"
         if verbo:
             naoEncontrado = naoEncontrado.replace("verbete", "verbo")
-        sugestao = arvore.xpath('//*[@id="enchant"]/a[1]/text()')
         if len(sugestao) == 0:
             return naoEncontrado
-        sugestao = "\n\n_Você quis dizer_ *" + sugestao[0] + "*?"
-        return naoEncontrado + sugestao
+        naoEncontrado += "\n\n_Você quis dizer_ *" + sugestao + "*?"
+        return naoEncontrado
 
-    def obterPagina(self, verbete):
-        # Receita obtida em http://wiki.python.org.br/RemovedorDeAcentos
-        sem_acento = normalize('NFKD', verbete).encode('ASCII', 'ignore')
-        sem_acento = sem_acento.decode('ASCII').lower()
-        url = Diciobot.default_url + sem_acento
-        pagina = requests.get(url)
-        return pagina, url
+    def buscar(self, verbete):
+        base_url = "http://www.dicio.com.br"
+        search_url = "http://www.dicio.com.br/pesquisa.php?q=" + verbete
+        busca = requests.get(search_url)
+        tree = html.fromstring(busca.text)
+        if "/pesquisa.php" in busca.url:
+            # Retornou uma página de busca
+            pagina = tree.xpath('//*[@class="found"]')
+            if len(pagina) == 0:
+                # Não encontrou resultados pra busca do verbete
+                pagina = tree.xpath('//*[@id="enchant"]/a[1]')
+                if len(pagina) == 0:
+                    # Não tem nenhuma sugestao para o verbete nao encontrado
+                    return requests.get(base_url + "/404"), ""
+
+                # Tem sugestões para o verbete não encontrado
+                sugestao = pagina[0].text
+                return requests.get(base_url + "/404"), sugestao
+
+            # Encontrou resultados pra busca do verbete
+            pagina = tree.xpath('//*[@class="resultados"][1]/li/a[1]')
+            href = pagina[0].values()[0]
+            sugestao = pagina[0].text
+            if sugestao == verbete:
+                # Primeiro resultado é o verbete solicitado
+                busca = requests.get(base_url + href)
+                return busca, ""
+
+            # Primeiro resultado não é o verbete solicitado
+            return requests.get(base_url + "/404"), sugestao
+
+        # Retornou diretamente a página do verbete
+        return busca, ""
 
 
 def main():
