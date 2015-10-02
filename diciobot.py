@@ -408,14 +408,15 @@ class Diciobot():
 
             # Encontrou resultados pra busca do verbete
             pagina = tree.xpath('//*[@class="resultados"][1]/li/a[1]')
-            href = pagina[0].values()[0]
-            sugestao = pagina[0].text
-            if sugestao == verbete:
-                # Primeiro resultado é o verbete solicitado
-                busca = requests.get(base_url + href)
-                return busca, ""
+            for each in pagina:
+                href = each.values()[0]
+                sugestao = each.text
+                if sugestao == verbete:
+                    # Encontrou o verbete solicitado nos resultados
+                    busca = requests.get(base_url + href)
+                    return busca, ""
 
-            # Primeiro resultado não é o verbete solicitado
+            # Não encontrou o verbete solicitado nos resultados
             return requests.get(base_url + "/404"), sugestao
 
         # Retornou diretamente a página do verbete
