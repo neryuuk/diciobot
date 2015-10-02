@@ -4,11 +4,17 @@ import requests
 import telegram
 import configparser
 from unicodedata import normalize
-from lxml import html, etree
+from lxml import html
 
-class DicioBot():
-    options = ["start","help","ajuda","d","definir","s","sinonimos",\
-               "r","rimas","ana","anagramas","c","conjugar","dia"]
+
+class Diciobot():
+
+    """() -> ()
+    Classe Diciobot.
+    """
+
+    options = ["start", "help", "ajuda", "d", "definir", "s", "sinonimos",
+               "r", "rimas", "ana", "anagramas", "c", "conjugar", "dia"]
     helpMessage = """As opções *disponíveis* são as _seguintes_:
 
 /definir ou /d - Obter a *definição* de um _verbete_;
@@ -16,8 +22,7 @@ class DicioBot():
 /rimas ou /r - Obter *rimas* de um _verbete_;
 /anagramas ou /ana - Obter *anagramas* de um _verbete_;
 /conjugar ou /c - *Conjugar* um _verbo_;
-/dia - *Palavra do dia*.
-    """
+/dia - *Palavra do dia*."""
     default_url = 'http://www.dicio.com.br/'
 
     def __init__(self):
@@ -36,7 +41,8 @@ class DicioBot():
 
     def startBot(self):
         while True:
-            for update in self.bot.getUpdates(offset=self.lastUpdate, timeout=10):
+            for update in self.bot.getUpdates(offset=self.lastUpdate,
+                                              timeout=10):
                 chat_id = update.message.chat_id
                 message = update.message.text
                 message_id = update.message.message_id
@@ -44,79 +50,147 @@ class DicioBot():
                 if message:
                     if "@diciobot" in message:
                         botid = "@diciobot"
-                        message = message[:message.find(botid)] + message[message.find(botid) + len(botid):]
+                        message = message[:message.find(botid)]
+                        message += message[message.find(botid) + len(botid):]
 
                     if(message.startswith('/')):
                         command, _, arguments = message.partition(' ')
-                        if command[1:] in DicioBot.options:
+                        if command[1:] in Diciobot.options:
                             noArgument = arguments == ''
+                            text = "A utilização correta é "
+                            text += command + " _verbete_."
                             if command == '/start':
-                                self.bot.sendMessage(chat_id=chat_id, text="Vamos *começar*?", parse_mode="Markdown")
-                                self.bot.sendMessage(chat_id=chat_id, text=DicioBot.helpMessage, parse_mode="Markdown")
+                                self.bot.sendMessage(chat_id=chat_id,
+                                                     text="Vamos *começar*?",
+                                                     parse_mode="Markdown")
+                                self.bot.sendMessage(chat_id=chat_id,
+                                                     text=Diciobot.helpMessage,
+                                                     parse_mode="Markdown")
 
-                            elif command in ['/help','/ajuda']:
-                                self.bot.sendMessage(chat_id=chat_id, text=DicioBot.helpMessage, parse_mode="Markdown")
+                            elif command in ['/help', '/ajuda']:
+                                self.bot.sendMessage(chat_id=chat_id,
+                                                     text=Diciobot.helpMessage,
+                                                     parse_mode="Markdown")
 
-                            elif command in ['/d','/definir']:
+                            elif command in ['/d', '/definir']:
                                 if noArgument:
-                                    self.bot.sendMessage(chat_id=chat_id, text="A utilização correta é " + command + " _verbete_.", parse_mode="Markdown", reply_to_message_id=message_id)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
                                 else:
-                                    msg_text = self.definirVerbete(arguments)
-                                    self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
+                                    text = self.definirVerbete(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
 
-                            elif command in ['/s','/sinonimos']:
+                            elif command in ['/s', '/sinonimos']:
                                 if noArgument:
-                                    self.bot.sendMessage(chat_id=chat_id, text="A utilização correta é " + command + " _verbete_.", parse_mode="Markdown", reply_to_message_id=message_id)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
                                 else:
-                                    msg_text = self.obterSinonimos(arguments)
-                                    self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
+                                    text = self.obterSinonimos(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
 
-                            elif command in ['/r','/rimas']:
+                            elif command in ['/r', '/rimas']:
                                 if noArgument:
-                                    self.bot.sendMessage(chat_id=chat_id, text="A utilização correta é " + command + " _verbete_.", parse_mode="Markdown", reply_to_message_id=message_id)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
                                 else:
-                                    msg_text = self.obterRimas(arguments)
-                                    self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
+                                    text = self.obterRimas(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
 
-                            elif command in ['/ana','/anagramas']:
+                            elif command in ['/ana', '/anagramas']:
                                 if noArgument:
-                                    self.bot.sendMessage(chat_id=chat_id, text="A utilização correta é " + command + " _verbete_.", parse_mode="Markdown", reply_to_message_id=message_id)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
                                 else:
-                                    msg_text = self.obterAnagramas(arguments)
-                                    self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
+                                    text = self.obterAnagramas(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
 
-                            elif command in ['/c','/conjugar']:
+                            elif command in ['/c', '/conjugar']:
                                 if noArgument:
-                                    self.bot.sendMessage(chat_id=chat_id, text="A utilização correta é " + command + " _verbo_.", parse_mode="Markdown", reply_to_message_id=message_id)
+                                    text = text.replace("verbete", "verbo")
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
                                 else:
-                                    msg_text = self.conjugarVerbo(arguments)
-                                    self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
+                                    text = self.conjugarVerbo(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
 
                             elif command == '/dia':
-                                msg_text = self.palavraDoDia()
-                                self.bot.sendMessage(chat_id=chat_id, text=msg_text, parse_mode="Markdown", disable_web_page_preview=True, reply_to_message_id=message_id)
+                                text = self.palavraDoDia()
+                                self.bot.sendMessage(
+                                    chat_id=chat_id,
+                                    text=text,
+                                    parse_mode="Markdown",
+                                    disable_web_page_preview=True,
+                                    reply_to_message_id=message_id)
 
-                            elif command in ['/a','/antonimos']:
+                            elif command in ['/a', '/antonimos']:
                                 if noArgument:
                                     pass
                                 else:
                                     pass
 
-                            elif command in ['/e','/exemplos']:
+                            elif command in ['/e', '/exemplos']:
                                 if noArgument:
                                     pass
                                 else:
                                     pass
 
-                            elif command in ['/t','/tudo']:
+                            elif command in ['/t', '/tudo']:
                                 if noArgument:
                                     pass
                                 else:
                                     pass
 
                     else:
-                        self.bot.sendMessage(chat_id=chat_id, text="Você precisa executar um dos *comandos* _disponíveis_.", parse_mode="Markdown")
-                        self.bot.sendMessage(chat_id=chat_id, text=DicioBot.helpMessage, parse_mode="Markdown")
+                        text = "Você precisa executar um dos *comandos* "
+                        text += "_disponíveis_."
+                        self.bot.sendMessage(
+                            chat_id=chat_id,
+                            text=text,
+                            parse_mode="Markdown")
+                        self.bot.sendMessage(
+                            chat_id=chat_id,
+                            text=Diciobot.helpMessage,
+                            parse_mode="Markdown")
 
                     self.lastUpdate = update.update_id + 1
 
@@ -124,20 +198,23 @@ class DicioBot():
         pass
 
     def definirVerbete(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem definição ou significado disponíveis._"
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem definição ou significado disponíveis._"
         pagina, url = self.obterPagina(verbete)
         fonte = "\n\n*Fonte:* " + url.replace("_", "\_")
         arvore = html.fromstring(pagina.text)
         if pagina.status_code == 404:
             return self.quatroZeroQuatro(arvore, verbete)
-        titulos_def, titulo_def = arvore.xpath('//*[@class="tit-section"]/text()'), ""
+        titulos_def = arvore.xpath('//*[@class="tit-section"]/text()')
+        titulo_def = ""
         for each in titulos_def:
             if 'Definição' in each:
                 titulo_def = each.split(' ')
         if len(titulo_def) == 0:
             significado = ''
         else:
-            significado = '*' + ' '.join(titulo_def[:-1]) + '* _' + titulo_def[-1] + "_\n"
+            significado = '*' + ' '.join(titulo_def[:-1])
+            significado += '* _' + titulo_def[-1] + "_\n"
             definicao = arvore.xpath('//*[@class="adicional"][1]//node()')
             for each in definicao:
                 if type(each) == html.HtmlElement:
@@ -151,8 +228,9 @@ class DicioBot():
             return naoDisponivel
         elif len(titulo) == 0:
             significado += "Significado: Não encontrado."
-            return significado.replace("\n ","\n") + fonte
-        titulo = ''.join(arvore.xpath('//*[@id="tit-significado"]/text()')).split(' ')
+            return significado.replace("\n ", "\n") + fonte
+        titulo = ''.join(arvore.xpath('//*[@id="tit-significado"]/text()'))
+        titulo = titulo.split(' ')
         titulo = '*' + ' '.join(titulo[:-1]) + '* _' + titulo[-1] + '_'
         elemento = arvore.xpath('//*[@id="significado"]//node()')
         significado += titulo + "\n"
@@ -162,10 +240,11 @@ class DicioBot():
                     significado += "\n"
             else:
                 significado += each.replace("*", "\*")
-        return significado.replace("\n ","\n") + fonte
+        return significado.replace("\n ", "\n") + fonte
 
     def obterSinonimos(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem sinônimos disponíveis._"
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem sinônimos disponíveis._"
         pagina, url = self.obterPagina(verbete)
         fonte = "\n\n*Fonte:* " + url.replace("_", "\_")
         arvore = html.fromstring(pagina.text)
@@ -178,7 +257,8 @@ class DicioBot():
                 sinonimos = each.split(' ')
         if len(sinonimos) == 0:
             return naoDisponivel + fonte
-        sinonimos = '*' + ' '.join(sinonimos[:-1]) + '* _' + sinonimos[-1] + "_\n"
+        sinonimos = '*' + ' '.join(sinonimos[:-1])
+        sinonimos += '* _' + sinonimos[-1] + "_\n"
         elemento = arvore.xpath('//*[@class="adicional cols"]/span//node()')
         listaSinonimos = []
         for each in elemento:
@@ -190,7 +270,8 @@ class DicioBot():
         return sinonimos + fonte
 
     def obterRimas(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem rimas disponíveis._"
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem rimas disponíveis._"
         pagina, url = self.obterPagina(verbete)
         fonte = "\n\n*Fonte:* " + url
         arvore = html.fromstring(pagina.text)
@@ -212,7 +293,8 @@ class DicioBot():
         return rimas + fonte
 
     def obterAnagramas(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete + "* _não tem anagramas disponíveis._"
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem anagramas disponíveis._"
         pagina, url = self.obterPagina(verbete)
         fonte = "\n\n*Fonte:* " + url
         arvore = html.fromstring(pagina.text)
@@ -234,7 +316,8 @@ class DicioBot():
         return anagramas + fonte
 
     def conjugarVerbo(self, verbo):
-        naoDisponivel = "_O verbete_ *" + verbo + "* _não tem conjugação disponível._"
+        naoDisponivel = "_O verbete_ *" + verbo
+        naoDisponivel += "* _não tem conjugação disponível._"
         naoDisponivel += "\n_Tente um verbo no_ *infinitivo*."
         pagina, url = self.obterPagina(verbo)
         fonte = "*Fonte:* " + url.replace("_", "\_")
@@ -248,7 +331,8 @@ class DicioBot():
         for each in titulos:
             if 'Conjugação' in each:
                 conjugacao = each.split(' ')
-        conjugacao = '*' + ' '.join(conjugacao[:-1]) + '* _' + conjugacao[-1] + "_\n"
+        conjugacao = '*' + ' '.join(conjugacao[:-1]) + '* _' + conjugacao[-1]
+        conjugacao += "_\n"
         def_verbo = arvore.xpath('//*[@id="conjugacao"]/p//node()')
         for each in def_verbo:
             if type(each) == html.HtmlElement:
@@ -265,16 +349,17 @@ class DicioBot():
         for i in range(len(modos)):
             conjugacao += "*" + modos_nome[i] + "*\n"
             for j in range(len(modos[i])):
-                conjugacao += "*" + modos[i][j].find('div').text_content() + "*\n"
+                conjugacao += "*" + modos[i][j].find('div').text_content()
+                conjugacao += "*\n"
                 modos[i][j].find('div').drop_tree()
                 for each in modos[i][j].xpath('.//node()'):
                     if type(each) == html.HtmlElement:
                         if each.tag == "br":
                             conjugacao += "\n"
                     else:
-                        conjugacao += each.replace("*","\*")
+                        conjugacao += each.replace("*", "\*")
                 conjugacao += "\n"
-        return conjugacao.replace("\n ","\n") + fonte
+        return conjugacao.replace("\n ", "\n") + fonte
 
     def palavraDoDia(self):
         pagina, url = self.obterPagina("")
@@ -302,13 +387,16 @@ class DicioBot():
 
     def obterPagina(self, verbete):
         # Receita obtida em http://wiki.python.org.br/RemovedorDeAcentos
-        sem_acento = normalize('NFKD', verbete).encode('ASCII','ignore').decode('ASCII').lower()
-        url = DicioBot.default_url + sem_acento
+        sem_acento = normalize('NFKD', verbete).encode('ASCII', 'ignore')
+        sem_acento = sem_acento.decode('ASCII').lower()
+        url = Diciobot.default_url + sem_acento
         pagina = requests.get(url)
         return pagina, url
 
+
 def main():
-    diciobot = DicioBot()
+
+    diciobot = Diciobot()
     diciobot.startBot()
 
 if __name__ == '__main__':
