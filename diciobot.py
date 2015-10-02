@@ -257,8 +257,8 @@ class Diciobot():
                 sinonimos = each.split(' ')
         if len(sinonimos) == 0:
             return naoDisponivel + fonte
-        sinonimos = '*' + ' '.join(sinonimos[:-1])
-        sinonimos += '* _' + sinonimos[-1] + "_\n"
+        sinonimos = '*' + ' '.join(sinonimos[:-1]) + '* _' + sinonimos[-1]
+        sinonimos += "_\n"
         elemento = arvore.xpath('//*[@class="adicional cols"]/span//node()')
         listaSinonimos = []
         for each in elemento:
@@ -278,14 +278,13 @@ class Diciobot():
         if pagina.status_code == 404:
             return self.quatroZeroQuatro(arvore, verbete)
         titulos = arvore.xpath('//*[@class="tit-other"]/text()')
-        titulo = ''
+        rimas = ''
         for each in titulos:
             if 'Rimas' in each:
-                titulo = each.split(' ')
-        if len(titulo) == 0:
+                rimas = each.split(' ')
+        if len(rimas) == 0:
             return naoDisponivel + fonte
-        titulo = '*' + ' '.join(titulo[:-1]) + '* _' + titulo[-1] + '_'
-        rimas = titulo + "\n"
+        rimas = '*' + ' '.join(rimas[:-1]) + '* _' + rimas[-1] + "_\n"
         elemento = arvore.xpath('//*[@class="list col-4 small"][1]/li/text()')
         if len(elemento) > 1:
             rimas += '_' + ', '.join(elemento[:-1]) + '_ e '
@@ -301,14 +300,14 @@ class Diciobot():
         if pagina.status_code == 404:
             return self.quatroZeroQuatro(arvore, verbete)
         titulos = arvore.xpath('//*[@class="tit-other"]/text()')
-        titulo = ''
+        anagramas = ''
         for each in titulos:
             if 'Anagramas' in each:
-                titulo = each.split(' ')
-        if len(titulo) == 0:
+                anagramas = each.split(' ')
+        if len(anagramas) == 0:
             return naoDisponivel + fonte
-        titulo = '*' + ' '.join(titulo[:-1]) + '* _' + titulo[-1] + '_'
-        anagramas = titulo + "\n"
+        anagramas = '*' + ' '.join(anagramas[:-1]) + '* _' + anagramas[-1]
+        anagramas += "_\n"
         elemento = arvore.xpath('//*[@class="list col-4 small"][2]/li/text()')
         if len(elemento) > 1:
             anagramas += '_' + ', '.join(elemento[:-1]) + '_ e '
