@@ -263,11 +263,12 @@ class Diciobot():
             return naoDisponivel + fonte
         sinonimos = '*' + ' '.join(sinonimos[:-1]) + '* _' + sinonimos[-1]
         sinonimos += "_\n"
-        elemento = tree.xpath('//*[@class="adicional cols"]/span//node()')
         listaSinonimos = []
+        elemento = tree.xpath('//*[@class="adicional cols"][1]//a//node()')
+        if len(elemento) == 0:
+            elemento = tree.xpath('//*[@class="adicional"][1]//a//node()')
         for each in elemento:
-            if type(each) != html.HtmlElement:
-                listaSinonimos.append('_' + each + '_')
+            listaSinonimos.append('_' + each + '_')
         if len(listaSinonimos) > 1:
             sinonimos += ', '.join(listaSinonimos[:-1]) + ' e '
         sinonimos += listaSinonimos[-1]
