@@ -13,11 +13,13 @@ class Diciobot():
     """
 
     options = ["start", "help", "ajuda", "d", "definir", "s", "sinonimos",
-               "r", "rimas", "ana", "anagramas", "c", "conjugar", "dia"]
+               "a", "antonimos", "r", "rimas", "ana", "anagramas",
+               "c", "conjugar", "dia"]
     helpMessage = """As opções *disponíveis* são as _seguintes_:
 
 /definir ou /d - Obter a *definição* de um _verbete_;
 /sinonimos ou /s - Obter *sinônimos* de um _verbete_;
+/antonimos ou /a - Obter *antônimos* de um _verbete_;
 /rimas ou /r - Obter *rimas* de um _verbete_;
 /anagramas ou /ana - Obter *anagramas* de um _verbete_;
 /conjugar ou /c - *Conjugar* um _verbo_;
@@ -103,6 +105,22 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
+                            elif command in ['/a', '/antonimos']:
+                                if noArgument:
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
+                                else:
+                                    text = self.antonimos(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
+
                             elif command in ['/r', '/rimas']:
                                 if noArgument:
                                     self.bot.sendMessage(
@@ -160,12 +178,6 @@ class Diciobot():
                                     parse_mode="Markdown",
                                     disable_web_page_preview=True,
                                     reply_to_message_id=message_id)
-
-                            elif command in ['/a', '/antonimos']:
-                                if noArgument:
-                                    pass
-                                else:
-                                    pass
 
                             elif command in ['/e', '/exemplos']:
                                 if noArgument:
@@ -274,6 +286,34 @@ class Diciobot():
         sinonimos += listaSinonimos[-1]
         return sinonimos + fonte
 
+    def antonimos(self, verbete):
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem antônimos disponíveis._"
+        pagina, sugestao = self.buscar(verbete)
+        if pagina.status_code == 404:
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulos = tree.xpath('//*[@class="tit-section"]/text()')
+        antonimos = ''
+        for each in titulos:
+            if 'Antônimos' in each:
+                antonimos = each.split(' ')
+        if len(antonimos) == 0:
+            return naoDisponivel + fonte
+        antonimos = '*' + ' '.join(antonimos[:-1]) + '* _' + antonimos[-1]
+        antonimos += "_\n"
+        listaAntonimos = []
+        elemento = tree.xpath('//*[@class="adicional cols"][2]//a//node()')
+        if len(elemento) == 0:
+            elemento = tree.xpath('//*[@class="adicional"][2]//a//node()')
+        for each in elemento:
+            listaAntonimos.append('_' + each + '_')
+        if len(listaAntonimos) > 1:
+            antonimos += ', '.join(listaAntonimos[:-1]) + ' e '
+        antonimos += listaAntonimos[-1]
+        return antonimos + fonte
+
     def rimas(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
         naoDisponivel += "* _não tem rimas disponíveis._"
@@ -372,9 +412,6 @@ class Diciobot():
         definir = self.definir(doDia)
         doDia = "*Palavra do dia:* _" + doDia + "_\n\n"
         return doDia + definir
-
-    def antonimos(self, verbete):
-        pass
 
     def exemplos(self, verbete):
         pass
