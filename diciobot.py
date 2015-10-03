@@ -14,7 +14,7 @@ class Diciobot():
 
     options = ["start", "help", "ajuda", "d", "definir", "s", "sinonimos",
                "a", "antonimos", "r", "rimas", "ana", "anagramas",
-               "c", "conjugar", "dia"]
+               "e", "exemplos", "c", "conjugar", "dia"]
     helpMessage = """As opções *disponíveis* são as _seguintes_:
 
 /definir ou /d - Obter a *definição* de um _verbete_;
@@ -24,6 +24,8 @@ class Diciobot():
 /anagramas ou /ana - Obter *anagramas* de um _verbete_;
 /conjugar ou /c - *Conjugar* um _verbo_;
 /dia - *Palavra do dia*."""
+# /exemplos ou /e - Obter *exemplos de utilização de um _verbete_;
+# /tudo ou /t - Obter *todas* as opções *disponíveis de um _verbete_;
 
     def __init__(self):
         """() -> ()
@@ -41,8 +43,9 @@ class Diciobot():
 
     def startBot(self):
         while True:
-            for update in self.bot.getUpdates(offset=self.lastUpdate,
-                                              timeout=10):
+            for update in self.bot.getUpdates(
+                            offset=self.lastUpdate,
+                            timeout=10):
                 chat_id = update.message.chat_id
                 message = update.message.text
                 message_id = update.message.message_id
@@ -61,17 +64,20 @@ class Diciobot():
                             text = "A utilização correta é "
                             text += command + " _verbete_."
                             if command in ['/start']:
-                                self.bot.sendMessage(chat_id=chat_id,
-                                                     text="Vamos *começar*?",
-                                                     parse_mode="Markdown")
-                                self.bot.sendMessage(chat_id=chat_id,
-                                                     text=Diciobot.helpMessage,
-                                                     parse_mode="Markdown")
+                                self.bot.sendMessage(
+                                    chat_id=chat_id,
+                                    text="Vamos *começar*?",
+                                    parse_mode="Markdown")
+                                self.bot.sendMessage(
+                                    chat_id=chat_id,
+                                    text=Diciobot.helpMessage,
+                                    parse_mode="Markdown")
 
                             elif command in ['/help', '/ajuda']:
-                                self.bot.sendMessage(chat_id=chat_id,
-                                                     text=Diciobot.helpMessage,
-                                                     parse_mode="Markdown")
+                                self.bot.sendMessage(
+                                    chat_id=chat_id,
+                                    text=Diciobot.helpMessage,
+                                    parse_mode="Markdown")
 
                             elif command in ['/d', '/definir']:
                                 if noArgument:
@@ -153,6 +159,22 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
+                            elif command in ['/e', '/exemplos']:
+                                if noArgument:
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
+                                else:
+                                    text = self.exemplos(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
+
                             elif command in ['/c', '/conjugar']:
                                 if noArgument:
                                     text = text.replace("verbete", "verbo")
@@ -179,17 +201,8 @@ class Diciobot():
                                     disable_web_page_preview=True,
                                     reply_to_message_id=message_id)
 
-                            elif command in ['/e', '/exemplos']:
-                                if noArgument:
-                                    pass
-                                else:
-                                    pass
-
                             elif command in ['/t', '/tudo']:
-                                if noArgument:
-                                    pass
-                                else:
-                                    pass
+                                pass
 
                     else:
                         text = "Você precisa executar um dos *comandos* "
@@ -208,8 +221,10 @@ class Diciobot():
     def tudo(self, verbete):
         # definicao = self.definir(verbete)
         # sinonimos = self.sinonimos(verbete)
+        # antonimos = self.antonimos(verbete)
         # rimas = self.rimas(verbete)
         # anagramas = self.anagramas(verbete)
+        # exemplos = self.exemplos(verbete)
         # conjugacoes = self.conjugar(verbete)
         pass
 
@@ -359,6 +374,63 @@ class Diciobot():
         anagramas += '_' + elemento[-1] + "_"
         return anagramas + fonte
 
+    def exemplos(self, verbete):
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem frases ou exemplos disponíveis._"
+        pagina, sugestao = self.buscar(verbete)
+        if pagina.status_code == 404:
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulo_frases = tree.xpath('//*[@class="tit-frases"]/text()')
+        frases = ''
+        xpath = '//*[@class="frases"][1]/node()'
+        for each in titulo_frases:
+            if 'Frase' in each:
+                frases = each.split(' ')
+        if len(frases) != 0:
+            frases = '*' + ' '.join(frases[:-1]) + '* _' + frases[-1] + "_:\n"
+            elemento = tree.xpath(xpath)
+            xpath = '//*[@class="frases"][2]/node()'
+            elemento = elemento[1:]
+            for cada in elemento:
+                elem = cada.xpath('./span/node()')
+                for each in elem:
+                    if type(each) == html.HtmlElement:
+                        if each.tag == 'strong':
+                            frases += '*' + each.text + '*'
+                        elif each.tag == 'em':
+                            frases += "\n_" + each.text + "_\n"
+                    else:
+                        frases += each
+                frases += "\n"
+
+        titulo_exemplos = tree.xpath('//*[@class="tit-exemplo"]/text()')
+        exemplos = ''
+        for each in titulo_exemplos:
+            if 'Exemplo' in each:
+                exemplos = each.split(' ')
+        if len(exemplos) != 0:
+            exemplos = '*' + ' '.join(exemplos[:-1]) + '* _' + exemplos[-1]
+            exemplos += "_:\n"
+            elemento = tree.xpath(xpath)
+            for cada in elemento:
+                elem = cada.xpath('./node()')
+                for each in elem:
+                    if type(each) == html.HtmlElement:
+                        if each.tag == 'strong':
+                            exemplos += '*' + each.text + '*'
+                        elif each.tag == 'em':
+                            exemplos += "\n_" + each.text + "_\n"
+                    else:
+                        exemplos += each
+                exemplos += "\n"
+
+        if len(frases + exemplos) == 0:
+            return naoDisponivel + "\n\n" + fonte
+
+        return (frases + exemplos + fonte).replace("\n ", "\n")
+
     def conjugar(self, verbo):
         naoDisponivel = "_O verbete_ *" + verbo
         naoDisponivel += "* _não tem conjugação disponível._"
@@ -412,9 +484,6 @@ class Diciobot():
         definir = self.definir(doDia)
         doDia = "*Palavra do dia:* _" + doDia + "_\n\n"
         return doDia + definir
-
-    def exemplos(self, verbete):
-        pass
 
     def quatroZeroQuatro(self, verbete, sugestao, verbo=False):
         naoEncontrado = "_O verbete_ *" + verbete + "* _não foi encontrado._"
