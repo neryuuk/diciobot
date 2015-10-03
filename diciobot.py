@@ -14,7 +14,7 @@ class Diciobot():
 
     options = ["start", "help", "ajuda", "d", "definir", "s", "sinonimos",
                "a", "antonimos", "r", "rimas", "ana", "anagramas",
-               "e", "exemplos", "c", "conjugar", "dia"]
+               "e", "exemplos", "c", "conjugar", "t", "tudo", "dia"]
     helpMessage = """As opções *disponíveis* são as _seguintes_:
 
 /definir ou /d - Obter a *definição* de um _verbete_;
@@ -22,10 +22,10 @@ class Diciobot():
 /antonimos ou /a - Obter *antônimos* de um _verbete_;
 /rimas ou /r - Obter *rimas* de um _verbete_;
 /anagramas ou /ana - Obter *anagramas* de um _verbete_;
+/exemplos ou /e - Obter *exemplos* de utilização de um _verbete_;
 /conjugar ou /c - *Conjugar* um _verbo_;
+/tudo ou /t - Obter *todas* as opções *disponíveis* de um _verbete_;
 /dia - *Palavra do dia*."""
-# /exemplos ou /e - Obter *exemplos de utilização de um _verbete_;
-# /tudo ou /t - Obter *todas* as opções *disponíveis de um _verbete_;
 
     def __init__(self):
         """() -> ()
@@ -192,6 +192,24 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
+                            elif command in ['/t', '/tudo']:
+                                if noArgument:
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
+                                else:
+                                    tudo = self.tudo(arguments)
+                                    for each in tudo:
+                                        pass
+                                        self.bot.sendMessage(
+                                            chat_id=chat_id,
+                                            text=each,
+                                            parse_mode="Markdown",
+                                            disable_web_page_preview=True,
+                                            reply_to_message_id=message_id)
+
                             elif command in ['/dia']:
                                 text = self.palavraDoDia()
                                 self.bot.sendMessage(
@@ -200,9 +218,6 @@ class Diciobot():
                                     parse_mode="Markdown",
                                     disable_web_page_preview=True,
                                     reply_to_message_id=message_id)
-
-                            elif command in ['/t', '/tudo']:
-                                pass
 
                     else:
                         text = "Você precisa executar um dos *comandos* "
@@ -219,14 +234,23 @@ class Diciobot():
                     self.lastUpdate = update.update_id + 1
 
     def tudo(self, verbete):
-        # definicao = self.definir(verbete)
-        # sinonimos = self.sinonimos(verbete)
-        # antonimos = self.antonimos(verbete)
-        # rimas = self.rimas(verbete)
-        # anagramas = self.anagramas(verbete)
-        # exemplos = self.exemplos(verbete)
-        # conjugacoes = self.conjugar(verbete)
-        pass
+        tudo = []
+        tudo.append(self.definir(verbete))
+        if "_não foi encontrado._" in tudo[0]:
+            return tudo
+        tudo.append(self.sinonimos(verbete))
+        tudo.append(self.antonimos(verbete))
+        tudo.append(self.rimas(verbete))
+        tudo.append(self.anagramas(verbete))
+        tudo.append(self.exemplos(verbete))
+        tudo.append(self.conjugar(verbete))
+        remover = []
+        for i in range(len(tudo)):
+            if "* _não tem" in tudo[i]:
+                remover.insert(0, i)
+        for each in remover:
+            tudo.pop(each)
+        return tudo
 
     def definir(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
