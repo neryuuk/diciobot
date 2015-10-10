@@ -3,6 +3,7 @@
 import requests
 import telegram
 import configparser
+import cloudant
 from lxml import html
 
 
@@ -35,6 +36,13 @@ class Diciobot():
         self.config.read("diciobot.ini")
         self.token = self.config.get("Token", "token")
         self.bot = telegram.Bot(self.token)
+        self.botid = "@diciobot"
+        self.account = self.config.get("Database", "account")
+        self.api_key = self.config.get("Database", "api_key")
+        self.api_pass = self.config.get("Database", "api_pass")
+        self.name = self.config.get("Database", "name")
+        self.stats = StatsLog(self.account, self.api_key, self.api_pass)
+        self.diciobot_log = self.stats.getDatabase(self.name)
 
         try:
             self.lastUpdate = self.bot.getUpdates(limit=1)[0].update_id
@@ -49,16 +57,17 @@ class Diciobot():
                 chat_id = update.message.chat_id
                 message = update.message.text.lower()
                 message_id = update.message.message_id
-                first_name = update.message.from_user.first_name.strip()
+                first_name = update.message.from_user.first_name
+                info = self.getInfo(update)
 
                 if message:
-                    if "@diciobot" in message:
-                        botid = "@diciobot"
-                        message = message[:message.find(botid)]
-                        message += message[message.find(botid) + len(botid):]
+                    if self.botid in message:
+                        message = message.replace(self.botid, "")
 
                     if(message.startswith('/')):
                         command, _, arguments = message.partition(' ')
+                        info["command"] = command[1:]
+                        info["word"] = arguments
                         if command[1:] in Diciobot.options:
                             noArgument = arguments == ''
                             text = "Desculpe, _" + first_name
@@ -214,7 +223,8 @@ class Diciobot():
                                             reply_to_message_id=message_id)
 
                             elif command in ['/dia']:
-                                text = self.palavraDoDia()
+                                text, word = self.palavraDoDia()
+                                info["word"] = word
                                 self.bot.sendMessage(
                                     chat_id=chat_id,
                                     text=text,
@@ -222,19 +232,43 @@ class Diciobot():
                                     disable_web_page_preview=True,
                                     reply_to_message_id=message_id)
 
-                    else:
-                        text = "Você precisa executar um dos *comandos* "
-                        text += "_disponíveis_, _" + first_name + "_."
-                        self.bot.sendMessage(
-                            chat_id=chat_id,
-                            text=text,
-                            parse_mode="Markdown")
-                        self.bot.sendMessage(
-                            chat_id=chat_id,
-                            text=Diciobot.helpMessage,
-                            parse_mode="Markdown")
-
+                        else:
+                            text = "Desculpe, _" + first_name + "_, "
+                            text += "mas você precisa executar um dos "
+                            text += "*comandos* _disponíveis_."
+                            self.bot.sendMessage(
+                                chat_id=chat_id,
+                                text=text,
+                                parse_mode="Markdown")
+                            self.bot.sendMessage(
+                                chat_id=chat_id,
+                                text=Diciobot.helpMessage,
+                                parse_mode="Markdown")
+                    print(info)
+                    self.stats.log(info)
                     self.lastUpdate = update.update_id + 1
+
+    def getInfo(self, update):
+        chat_type = update.message.chat.type
+        info = {}
+        info["update_id"] = update.update_id
+        info["message_id"] = update.message.message_id
+        info["date"] = str(update.message.date)
+
+        if chat_type != "channel":
+            info["user_id"] = update.message.from_user.id
+            info["first_name"] = update.message.from_user.first_name
+            info["last_name"] = update.message.from_user.last_name
+            info["username"] = update.message.from_user.username
+            if chat_type == "group":
+                info["group_id"] = update.message.chat.id
+                info["group_title"] = update.message.chat.title
+        else:
+            info["channel_id"] = update.message.chat.id
+            info["channel_title"] = update.message.chat.title
+            info["username"] = update.message.from_user.username
+
+        return info
 
     def tudo(self, verbete):
         tudo = []
@@ -508,9 +542,9 @@ class Diciobot():
         pagina = requests.get("http://www.dicio.com.br")
         tree = html.fromstring(pagina.text)
         doDia = tree.xpath('//*[@id="dia"]/a/text()')[0]
-        definir = self.definir(doDia)
-        doDia = "*Palavra do dia:* _" + doDia + "_\n\n"
-        return doDia + definir
+        definir = "*Palavra do dia:* _" + doDia + "_\n\n"
+        definir += self.definir(doDia)
+        return definir, doDia
 
     def quatroZeroQuatro(self, verbete, sugestao, verbo=False):
         naoEncontrado = "_O verbete_ *" + verbete + "* _não foi encontrado._"
@@ -555,6 +589,44 @@ class Diciobot():
 
         # Retornou diretamente a página do verbete
         return busca, ""
+
+
+class StatsLog():
+
+    def __init__(self, account, api_key, api_pass):
+        """
+        Initializes the DB client and logs into the database,
+        returning the login status code.
+
+        :param account: account user string
+        :param api_key: api key string
+        :param api_pass: api password string
+        """
+        self.account = cloudant.Account(account)
+        self.login = self.account.login(api_key, api_pass)
+
+    def getDatabase(self, name):
+        """(String) -> (Response Object)
+        Instantiate the database and returns the reponse object.
+
+        :param name: A string containing the database name.
+        :returns: Response object
+        """
+        self.db = self.account.database(name)
+        return self.db.get()
+
+    def log(self, info):
+        """(Dictionary) -> ()
+        Tries to make a post request containing the log info
+
+        :param info: A dictionary object.
+        :returns: Response object
+        """
+        ok = False
+        while not ok:
+            response = self.db.post(params=info)
+            ok = response.ok
+        return response
 
 
 def main():
