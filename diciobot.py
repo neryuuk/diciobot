@@ -20,10 +20,10 @@ class Diciobot():
 /definir ou /d - Obter a *definição* de um _verbete_;
 /sinonimos ou /s - Obter *sinônimos* de um _verbete_;
 /antonimos ou /a - Obter *antônimos* de um _verbete_;
-/rimas ou /r - Obter *rimas* de um _verbete_;
-/anagramas ou /ana - Obter *anagramas* de um _verbete_;
 /exemplos ou /e - Obter *exemplos* de utilização de um _verbete_;
 /conjugar ou /c - *Conjugar* um _verbo_;
+/rimas ou /r - Obter *rimas* de um _verbete_;
+/anagramas ou /ana - Obter *anagramas* de um _verbete_;
 /tudo ou /t - Obter *todas* as opções *disponíveis* de um _verbete_;
 /dia - *Palavra do dia*."""
 
@@ -37,7 +37,7 @@ class Diciobot():
         self.bot = telegram.Bot(self.token)
 
         try:
-            self.lastUpdate = self.bot.getUpdates()[-1].update_id
+            self.lastUpdate = self.bot.getUpdates(limit=1)[0].update_id
         except IndexError:
             self.lastUpdate = None
 
@@ -45,10 +45,11 @@ class Diciobot():
         while True:
             for update in self.bot.getUpdates(
                             offset=self.lastUpdate,
-                            timeout=10):
+                            timeout=5):
                 chat_id = update.message.chat_id
-                message = update.message.text
+                message = update.message.text.lower()
                 message_id = update.message.message_id
+                first_name = update.message.from_user.first_name.strip()
 
                 if message:
                     if "@diciobot" in message:
@@ -58,15 +59,17 @@ class Diciobot():
 
                     if(message.startswith('/')):
                         command, _, arguments = message.partition(' ')
-                        command = command.lower()
                         if command[1:] in Diciobot.options:
                             noArgument = arguments == ''
-                            text = "A utilização correta é "
+                            text = "Desculpe, _" + first_name
+                            text += "_, a utilização correta é "
                             text += command + " _verbete_."
                             if command in ['/start']:
+                                start = "Vamos *começar*, _"
+                                start += first_name + "_?"
                                 self.bot.sendMessage(
                                     chat_id=chat_id,
-                                    text="Vamos *começar*?",
+                                    text=start,
                                     parse_mode="Markdown")
                                 self.bot.sendMessage(
                                     chat_id=chat_id,
@@ -127,38 +130,6 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/r', '/rimas']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
-                                    text = self.rimas(arguments)
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        disable_web_page_preview=True,
-                                        reply_to_message_id=message_id)
-
-                            elif command in ['/ana', '/anagramas']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
-                                    text = self.anagramas(arguments)
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        disable_web_page_preview=True,
-                                        reply_to_message_id=message_id)
-
                             elif command in ['/e', '/exemplos']:
                                 if noArgument:
                                     self.bot.sendMessage(
@@ -185,6 +156,38 @@ class Diciobot():
                                         reply_to_message_id=message_id)
                                 else:
                                     text = self.conjugar(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
+
+                            elif command in ['/r', '/rimas']:
+                                if noArgument:
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
+                                else:
+                                    text = self.rimas(arguments)
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
+
+                            elif command in ['/ana', '/anagramas']:
+                                if noArgument:
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        reply_to_message_id=message_id)
+                                else:
+                                    text = self.anagramas(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=text,
@@ -221,7 +224,7 @@ class Diciobot():
 
                     else:
                         text = "Você precisa executar um dos *comandos* "
-                        text += "_disponíveis_."
+                        text += "_disponíveis_, _" + first_name + "_."
                         self.bot.sendMessage(
                             chat_id=chat_id,
                             text=text,
@@ -240,10 +243,10 @@ class Diciobot():
             return tudo
         tudo.append(self.sinonimos(verbete))
         tudo.append(self.antonimos(verbete))
-        tudo.append(self.rimas(verbete))
-        tudo.append(self.anagramas(verbete))
         tudo.append(self.exemplos(verbete))
         tudo.append(self.conjugar(verbete))
+        tudo.append(self.rimas(verbete))
+        tudo.append(self.anagramas(verbete))
         remover = []
         for i in range(len(tudo)):
             if "* _não tem" in tudo[i]:
@@ -353,51 +356,6 @@ class Diciobot():
         antonimos += listaAntonimos[-1]
         return antonimos + fonte
 
-    def rimas(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete
-        naoDisponivel += "* _não tem rimas disponíveis._"
-        pagina, sugestao = self.buscar(verbete)
-        if pagina.status_code == 404:
-            return self.quatroZeroQuatro(verbete, sugestao)
-        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
-        tree = html.fromstring(pagina.text)
-        titulos = tree.xpath('//*[@class="tit-other"]/text()')
-        rimas = ''
-        for each in titulos:
-            if 'Rimas' in each:
-                rimas = each.split(' ')
-        if len(rimas) == 0:
-            return naoDisponivel + fonte
-        rimas = '*' + ' '.join(rimas[:-1]) + '* _' + rimas[-1] + "_\n"
-        elemento = tree.xpath('//*[@class="list col-4 small"][1]/li/text()')
-        if len(elemento) > 1:
-            rimas += '_' + ', '.join(elemento[:-1]) + '_ e '
-        rimas += '_' + elemento[-1] + "_"
-        return rimas + fonte
-
-    def anagramas(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete
-        naoDisponivel += "* _não tem anagramas disponíveis._"
-        pagina, sugestao = self.buscar(verbete)
-        if pagina.status_code == 404:
-            return self.quatroZeroQuatro(verbete, sugestao)
-        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
-        tree = html.fromstring(pagina.text)
-        titulos = tree.xpath('//*[@class="tit-other"]/text()')
-        anagramas = ''
-        for each in titulos:
-            if 'Anagramas' in each:
-                anagramas = each.split(' ')
-        if len(anagramas) == 0:
-            return naoDisponivel + fonte
-        anagramas = '*' + ' '.join(anagramas[:-1]) + '* _' + anagramas[-1]
-        anagramas += "_\n"
-        elemento = tree.xpath('//*[@class="list col-4 small"][2]/li/text()')
-        if len(elemento) > 1:
-            anagramas += '_' + ', '.join(elemento[:-1]) + '_ e '
-        anagramas += '_' + elemento[-1] + "_"
-        return anagramas + fonte
-
     def exemplos(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
         naoDisponivel += "* _não tem frases ou exemplos disponíveis._"
@@ -500,6 +458,51 @@ class Diciobot():
                         conjugacao += each.replace("*", "\*")
                 conjugacao += "\n"
         return conjugacao.replace("\n ", "\n") + fonte
+
+    def rimas(self, verbete):
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem rimas disponíveis._"
+        pagina, sugestao = self.buscar(verbete)
+        if pagina.status_code == 404:
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulos = tree.xpath('//*[@class="tit-other"]/text()')
+        rimas = ''
+        for each in titulos:
+            if 'Rimas' in each:
+                rimas = each.split(' ')
+        if len(rimas) == 0:
+            return naoDisponivel + fonte
+        rimas = '*' + ' '.join(rimas[:-1]) + '* _' + rimas[-1] + "_\n"
+        elemento = tree.xpath('//*[@class="list col-4 small"][1]/li/text()')
+        if len(elemento) > 1:
+            rimas += '_' + ', '.join(elemento[:-1]) + '_ e '
+        rimas += '_' + elemento[-1] + "_"
+        return rimas + fonte
+
+    def anagramas(self, verbete):
+        naoDisponivel = "_O verbete_ *" + verbete
+        naoDisponivel += "* _não tem anagramas disponíveis._"
+        pagina, sugestao = self.buscar(verbete)
+        if pagina.status_code == 404:
+            return self.quatroZeroQuatro(verbete, sugestao)
+        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+        tree = html.fromstring(pagina.text)
+        titulos = tree.xpath('//*[@class="tit-other"]/text()')
+        anagramas = ''
+        for each in titulos:
+            if 'Anagramas' in each:
+                anagramas = each.split(' ')
+        if len(anagramas) == 0:
+            return naoDisponivel + fonte
+        anagramas = '*' + ' '.join(anagramas[:-1]) + '* _' + anagramas[-1]
+        anagramas += "_\n"
+        elemento = tree.xpath('//*[@class="list col-4 small"][2]/li/text()')
+        if len(elemento) > 1:
+            anagramas += '_' + ', '.join(elemento[:-1]) + '_ e '
+        anagramas += '_' + elemento[-1] + "_"
+        return anagramas + fonte
 
     def palavraDoDia(self):
         pagina = requests.get("http://www.dicio.com.br")
