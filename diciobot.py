@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import requests
 import telegram
-import configparser
 import cloudant
+import json
 from lxml import html
 
 
@@ -17,31 +17,35 @@ class Diciobot():
     options = ["d", "definir", "s", "sinonimos", "a", "antonimos",
                "r", "rimas", "ana", "anagramas", "e", "exemplos",
                "c", "conjugar", "t", "tudo"]
+    dica = "*Dica*: Quando estiver falando *diretamente* com o bot, "
+    dica += "você pode mandar diversas palavras separadas por "
+    dica += "*vírgula* para obter suas definições. "
+    dica += "(Sem precisar do comando /definir)"
     helpMessage = """As opções *disponíveis* são as _seguintes_:
 
-/definir ou /d - Obter a *definição* de um _verbete_;
-/sinonimos ou /s - Obter *sinônimos* de um _verbete_;
-/antonimos ou /a - Obter *antônimos* de um _verbete_;
-/exemplos ou /e - Obter *exemplos* de utilização de um _verbete_;
-/conjugar ou /c - *Conjugar* um _verbo_;
-/rimas ou /r - Obter *rimas* de um _verbete_;
-/anagramas ou /ana - Obter *anagramas* de um _verbete_;
-/tudo ou /t - Obter *todas* as opções *disponíveis* de um _verbete_;
+/definir ou /d - *definição* de um _verbete_;
+/sinonimos ou /s - *sinônimos* de um _verbete_;
+/antonimos ou /a - *antônimos* de um _verbete_;
+/exemplos ou /e - *exemplos* de utilização de um _verbete_;
+/conjugar ou /c - *conjugar* um _verbo_;
+/rimas ou /r - *rimas* de um _verbete_;
+/anagramas ou /ana - *anagramas* de um _verbete_;
+/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_;
 /dia - *Palavra do dia*."""
 
     def __init__(self):
         """() -> ()
         Inicializa o bot.
         """
-        self.config = configparser.ConfigParser()
-        self.config.read("diciobot.ini")
-        self.token = self.config.get("Token", "token")
+        with open('diciobot.json') as config_file:
+            self.config = json.load(config_file)
+        self.token = self.config["Telegram"]["token"]
         self.bot = telegram.Bot(self.token)
-        self.botid = "@diciobot"
-        self.account = self.config.get("Database", "account")
-        self.api_key = self.config.get("Database", "api_key")
-        self.api_pass = self.config.get("Database", "api_pass")
-        self.name = self.config.get("Database", "name")
+        self.botid = self.config["Telegram"]["bot_id"]
+        self.account = self.config["Database"]["account"]
+        self.api_key = self.config["Database"]["api_key"]
+        self.api_pass = self.config["Database"]["api_pass"]
+        self.name = self.config["Database"]["name"]
         self.stats = StatsLog(self.account, self.api_key, self.api_pass)
         self.diciobot_log = self.stats.getDatabase(self.name)
 
@@ -83,23 +87,23 @@ class Diciobot():
                                     parse_mode="Markdown",
                                     reply_to_message_id=message_id)
                             else:
-                                if command in ['start']:
-                                    start = "Vamos *começar*, _"
-                                    start += first_name + "_?"
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=start,
-                                        parse_mode="Markdown")
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=Diciobot.helpMessage,
-                                        parse_mode="Markdown")
-
-                                elif command in ['help', 'ajuda']:
+                                if command in ['start', 'help', 'ajuda']:
+                                    if command in ["start"]:
+                                        start = "Vamos *começar*, _"
+                                        start += first_name + "_?"
+                                        self.bot.sendMessage(
+                                            chat_id=chat_id,
+                                            text=start,
+                                            parse_mode="Markdown")
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=Diciobot.helpMessage,
                                         parse_mode="Markdown")
+                                    if update.message.chat.type == "private":
+                                        self.bot.sendMessage(
+                                            chat_id=chat_id,
+                                            text=Diciobot.dica,
+                                            parse_mode="Markdown")
 
                                 elif command in ['d', 'definir']:
                                     text = self.definir(arguments)
