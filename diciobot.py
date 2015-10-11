@@ -13,9 +13,10 @@ class Diciobot():
     Classe Diciobot.
     """
 
-    options = ["start", "help", "ajuda", "d", "definir", "s", "sinonimos",
-               "a", "antonimos", "r", "rimas", "ana", "anagramas",
-               "e", "exemplos", "c", "conjugar", "t", "tudo", "dia"]
+    simple_opt = ["start", "help", "ajuda", "dia"]
+    options = ["d", "definir", "s", "sinonimos", "a", "antonimos",
+               "r", "rimas", "ana", "anagramas", "e", "exemplos",
+               "c", "conjugar", "t", "tudo"]
     helpMessage = """As opções *disponíveis* são as _seguintes_:
 
 /definir ou /d - Obter a *definição* de um _verbete_;
@@ -66,15 +67,15 @@ class Diciobot():
 
                     if(message.startswith('/')):
                         command, _, arguments = message.partition(' ')
-                        if command[1:] in Diciobot.options:
-                            info["command"] = command[1:]
+                        command = command[1:]
+                        noArgument = arguments == ''
+                        if command in Diciobot.options + Diciobot.simple_opt:
+                            info["command"] = command
                             info["word"] = arguments
-                            noArgument = arguments == ''
-                            simple_opt = ["start", "help", "ajuda", "dia"]
-                            simple = command[1:] not in simple_opt
+                            simple = command not in Diciobot.simple_opt
                             if noArgument and simple:
                                 text = "Desculpe, _" + first_name
-                                text += "_, a utilização correta é "
+                                text += "_, mas a utilização correta é /"
                                 text += command + " _verbete_."
                                 self.bot.sendMessage(
                                     chat_id=chat_id,
@@ -82,7 +83,7 @@ class Diciobot():
                                     parse_mode="Markdown",
                                     reply_to_message_id=message_id)
                             else:
-                                if command in ['/start']:
+                                if command in ['start']:
                                     start = "Vamos *começar*, _"
                                     start += first_name + "_?"
                                     self.bot.sendMessage(
@@ -94,13 +95,13 @@ class Diciobot():
                                         text=Diciobot.helpMessage,
                                         parse_mode="Markdown")
 
-                                elif command in ['/help', '/ajuda']:
+                                elif command in ['help', 'ajuda']:
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
                                         text=Diciobot.helpMessage,
                                         parse_mode="Markdown")
 
-                                elif command in ['/d', '/definir']:
+                                elif command in ['d', 'definir']:
                                     text = self.definir(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -109,7 +110,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                elif command in ['/s', '/sinonimos']:
+                                elif command in ['s', 'sinonimos']:
                                     text = self.sinonimos(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -118,7 +119,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                elif command in ['/a', '/antonimos']:
+                                elif command in ['a', 'antonimos']:
                                     text = self.antonimos(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -127,7 +128,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                elif command in ['/e', '/exemplos']:
+                                elif command in ['e', 'exemplos']:
                                     text = self.exemplos(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -136,7 +137,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                elif command in ['/c', '/conjugar']:
+                                elif command in ['c', 'conjugar']:
                                     text = self.conjugar(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -145,7 +146,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                elif command in ['/r', '/rimas']:
+                                elif command in ['r', 'rimas']:
                                     text = self.rimas(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -154,7 +155,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                elif command in ['/ana', '/anagramas']:
+                                elif command in ['ana', 'anagramas']:
                                     text = self.anagramas(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -163,7 +164,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                elif command in ['/t', '/tudo']:
+                                elif command in ['t', 'tudo']:
                                     tudo = self.tudo(arguments)
                                     for each in tudo:
                                         self.bot.sendMessage(
@@ -173,7 +174,7 @@ class Diciobot():
                                             disable_web_page_preview=True,
                                             reply_to_message_id=message_id)
 
-                                elif command in ['/dia']:
+                                elif command in ['dia']:
                                     text, info["word"] = self.palavraDoDia()
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
