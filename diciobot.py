@@ -66,39 +66,41 @@ class Diciobot():
 
                     if(message.startswith('/')):
                         command, _, arguments = message.partition(' ')
-                        info["command"] = command[1:]
-                        info["word"] = arguments
                         if command[1:] in Diciobot.options:
+                            info["command"] = command[1:]
+                            info["word"] = arguments
                             noArgument = arguments == ''
-                            text = "Desculpe, _" + first_name
-                            text += "_, a utilização correta é "
-                            text += command + " _verbete_."
-                            if command in ['/start']:
-                                start = "Vamos *começar*, _"
-                                start += first_name + "_?"
+                            simple_opt = ["start", "help", "ajuda", "dia"]
+                            simple = command[1:] not in simple_opt
+                            if noArgument and simple:
+                                text = "Desculpe, _" + first_name
+                                text += "_, a utilização correta é "
+                                text += command + " _verbete_."
                                 self.bot.sendMessage(
                                     chat_id=chat_id,
-                                    text=start,
-                                    parse_mode="Markdown")
-                                self.bot.sendMessage(
-                                    chat_id=chat_id,
-                                    text=Diciobot.helpMessage,
-                                    parse_mode="Markdown")
-
-                            elif command in ['/help', '/ajuda']:
-                                self.bot.sendMessage(
-                                    chat_id=chat_id,
-                                    text=Diciobot.helpMessage,
-                                    parse_mode="Markdown")
-
-                            elif command in ['/d', '/definir']:
-                                if noArgument:
+                                    text=text,
+                                    parse_mode="Markdown",
+                                    reply_to_message_id=message_id)
+                            else:
+                                if command in ['/start']:
+                                    start = "Vamos *começar*, _"
+                                    start += first_name + "_?"
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                        text=start,
+                                        parse_mode="Markdown")
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=Diciobot.helpMessage,
+                                        parse_mode="Markdown")
+
+                                elif command in ['/help', '/ajuda']:
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=Diciobot.helpMessage,
+                                        parse_mode="Markdown")
+
+                                elif command in ['/d', '/definir']:
                                     text = self.definir(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -107,14 +109,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/s', '/sinonimos']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                elif command in ['/s', '/sinonimos']:
                                     text = self.sinonimos(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -123,14 +118,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/a', '/antonimos']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                elif command in ['/a', '/antonimos']:
                                     text = self.antonimos(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -139,14 +127,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/e', '/exemplos']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                elif command in ['/e', '/exemplos']:
                                     text = self.exemplos(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -155,15 +136,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/c', '/conjugar']:
-                                if noArgument:
-                                    text = text.replace("verbete", "verbo")
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                elif command in ['/c', '/conjugar']:
                                     text = self.conjugar(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -172,14 +145,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/r', '/rimas']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                elif command in ['/r', '/rimas']:
                                     text = self.rimas(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -188,14 +154,7 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/ana', '/anagramas']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                elif command in ['/ana', '/anagramas']:
                                     text = self.anagramas(arguments)
                                     self.bot.sendMessage(
                                         chat_id=chat_id,
@@ -204,17 +163,9 @@ class Diciobot():
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                            elif command in ['/t', '/tudo']:
-                                if noArgument:
-                                    self.bot.sendMessage(
-                                        chat_id=chat_id,
-                                        text=text,
-                                        parse_mode="Markdown",
-                                        reply_to_message_id=message_id)
-                                else:
+                                elif command in ['/t', '/tudo']:
                                     tudo = self.tudo(arguments)
                                     for each in tudo:
-                                        pass
                                         self.bot.sendMessage(
                                             chat_id=chat_id,
                                             text=each,
@@ -222,15 +173,17 @@ class Diciobot():
                                             disable_web_page_preview=True,
                                             reply_to_message_id=message_id)
 
-                            elif command in ['/dia']:
-                                text, word = self.palavraDoDia()
-                                info["word"] = word
-                                self.bot.sendMessage(
-                                    chat_id=chat_id,
-                                    text=text,
-                                    parse_mode="Markdown",
-                                    disable_web_page_preview=True,
-                                    reply_to_message_id=message_id)
+                                elif command in ['/dia']:
+                                    text, info["word"] = self.palavraDoDia()
+                                    self.bot.sendMessage(
+                                        chat_id=chat_id,
+                                        text=text,
+                                        parse_mode="Markdown",
+                                        disable_web_page_preview=True,
+                                        reply_to_message_id=message_id)
+
+                                response = self.stats.log(info)
+                                print(info, response.ok)
 
                         else:
                             text = "Desculpe, _" + first_name + "_, "
@@ -244,8 +197,24 @@ class Diciobot():
                                 chat_id=chat_id,
                                 text=Diciobot.helpMessage,
                                 parse_mode="Markdown")
-                    print(info)
-                    self.stats.log(info)
+
+                    elif update.message.chat.type == "private":
+                        message = message.split(",")
+                        info["command"] = "d_private"
+                        for msg in message:
+                            if len(msg.strip()) != 0:
+                                info["word"] = msg.strip()
+                                text = self.definir(msg.strip())
+                                self.bot.sendMessage(
+                                    chat_id=chat_id,
+                                    text=text,
+                                    parse_mode="Markdown",
+                                    disable_web_page_preview=True,
+                                    reply_to_message_id=message_id)
+
+                                response = self.stats.log(info)
+                                print(info, response.ok)
+
                     self.lastUpdate = update.update_id + 1
 
     def getInfo(self, update):
@@ -254,19 +223,14 @@ class Diciobot():
         info["update_id"] = update.update_id
         info["message_id"] = update.message.message_id
         info["date"] = str(update.message.date)
+        info["chat_type"] = chat_type
 
         if chat_type != "channel":
             info["user_id"] = update.message.from_user.id
-            info["first_name"] = update.message.from_user.first_name
-            info["last_name"] = update.message.from_user.last_name
-            info["username"] = update.message.from_user.username
             if chat_type == "group":
                 info["group_id"] = update.message.chat.id
-                info["group_title"] = update.message.chat.title
         else:
             info["channel_id"] = update.message.chat.id
-            info["channel_title"] = update.message.chat.title
-            info["username"] = update.message.from_user.username
 
         return info
 
@@ -616,16 +580,19 @@ class StatsLog():
         return self.db.get()
 
     def log(self, info):
-        """(Dictionary) -> ()
-        Tries to make a post request containing the log info
+        """(Dictionary) -> (Response Object)
+        Tries (up to 3 times) to make a post request
+        containing the log info
 
         :param info: A dictionary object.
         :returns: Response object
         """
         ok = False
-        while not ok:
+        attempts = 0
+        while not ok or attempts < 3:
             response = self.db.post(params=info)
             ok = response.ok
+            attempts += 1
         return response
 
 
