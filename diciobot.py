@@ -190,19 +190,6 @@ class Diciobot():
                                 response = self.stats.log(info)
                                 print(info, response.ok)
 
-                        else:
-                            text = "Desculpe, _" + first_name + "_, "
-                            text += "mas você precisa executar um dos "
-                            text += "*comandos* _disponíveis_."
-                            self.bot.sendMessage(
-                                chat_id=chat_id,
-                                text=text,
-                                parse_mode="Markdown")
-                            self.bot.sendMessage(
-                                chat_id=chat_id,
-                                text=Diciobot.helpMessage,
-                                parse_mode="Markdown")
-
                     elif update.message.chat.type == "private":
                         message = message.split(",")
                         info["command"] = "d_private"
@@ -594,7 +581,7 @@ class StatsLog():
         """
         ok = False
         attempts = 0
-        while not ok or attempts < 3:
+        while not ok and attempts < 3:
             response = self.db.post(params=info)
             ok = response.ok
             attempts += 1
