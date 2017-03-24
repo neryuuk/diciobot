@@ -42,12 +42,12 @@ class Diciobot():
         self.token = self.config["Telegram"]["token"]
         self.bot = telegram.Bot(self.token)
         self.botid = self.config["Telegram"]["bot_id"]
-        self.account = self.config["Database"]["account"]
-        self.api_key = self.config["Database"]["api_key"]
-        self.api_pass = self.config["Database"]["api_pass"]
-        self.name = self.config["Database"]["name"]
-        self.stats = StatsLog(self.account, self.api_key, self.api_pass)
-        self.diciobot_log = self.stats.getDatabase(self.name)
+        # self.account = self.config["Database"]["account"]
+        # self.api_key = self.config["Database"]["api_key"]
+        # self.api_pass = self.config["Database"]["api_pass"]
+        # self.name = self.config["Database"]["name"]
+        # self.stats = StatsLog(self.account, self.api_key, self.api_pass)
+        # self.diciobot_log = self.stats.getDatabase(self.name)
 
         try:
             self.lastUpdate = self.bot.getUpdates(limit=1)[0].update_id
@@ -57,8 +57,8 @@ class Diciobot():
     def startBot(self):
         while True:
             for update in self.bot.getUpdates(
-                            offset=self.lastUpdate,
-                            timeout=5):
+                    offset=self.lastUpdate,
+                    timeout=5):
                 chat_id = update.message.chat_id
                 message = update.message.text.lower()
                 message_id = update.message.message_id
@@ -67,7 +67,7 @@ class Diciobot():
 
                 if message:
                     if self.botid in message:
-                        message = message.replace(self.botid, "")
+                        message = message.replace(self.botid, "").strip()
 
                     if(message.startswith('/')):
                         command, _, arguments = message.partition(' ')
@@ -81,7 +81,7 @@ class Diciobot():
                                 text = "Desculpe, _" + first_name
                                 text += "_, mas a utilização correta é /"
                                 text += command + " _verbete_."
-                                self.bot.sendMessage(
+                                self.send(
                                     chat_id=chat_id,
                                     text=text,
                                     parse_mode="Markdown",
@@ -91,23 +91,23 @@ class Diciobot():
                                     if command in ["start"]:
                                         start = "Vamos *começar*, _"
                                         start += first_name + "_?"
-                                        self.bot.sendMessage(
+                                        self.send(
                                             chat_id=chat_id,
                                             text=start,
                                             parse_mode="Markdown")
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=Diciobot.helpMessage,
                                         parse_mode="Markdown")
                                     if update.message.chat.type == "private":
-                                        self.bot.sendMessage(
+                                        self.send(
                                             chat_id=chat_id,
                                             text=Diciobot.dica,
                                             parse_mode="Markdown")
 
                                 elif command in ['d', 'definir']:
                                     text = self.definir(arguments)
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
@@ -116,7 +116,7 @@ class Diciobot():
 
                                 elif command in ['s', 'sinonimos']:
                                     text = self.sinonimos(arguments)
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
@@ -125,7 +125,7 @@ class Diciobot():
 
                                 elif command in ['a', 'antonimos']:
                                     text = self.antonimos(arguments)
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
@@ -134,7 +134,7 @@ class Diciobot():
 
                                 elif command in ['e', 'exemplos']:
                                     text = self.exemplos(arguments)
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
@@ -143,7 +143,7 @@ class Diciobot():
 
                                 elif command in ['c', 'conjugar']:
                                     text = self.conjugar(arguments)
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
@@ -152,7 +152,7 @@ class Diciobot():
 
                                 elif command in ['r', 'rimas']:
                                     text = self.rimas(arguments)
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
@@ -161,7 +161,7 @@ class Diciobot():
 
                                 elif command in ['ana', 'anagramas']:
                                     text = self.anagramas(arguments)
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
@@ -171,7 +171,7 @@ class Diciobot():
                                 elif command in ['t', 'tudo']:
                                     tudo = self.tudo(arguments)
                                     for each in tudo:
-                                        self.bot.sendMessage(
+                                        self.send(
                                             chat_id=chat_id,
                                             text=each,
                                             parse_mode="Markdown",
@@ -180,34 +180,43 @@ class Diciobot():
 
                                 elif command in ['dia']:
                                     text, info["word"] = self.palavraDoDia()
-                                    self.bot.sendMessage(
+                                    self.send(
                                         chat_id=chat_id,
                                         text=text,
                                         parse_mode="Markdown",
                                         disable_web_page_preview=True,
                                         reply_to_message_id=message_id)
 
-                                response = self.stats.log(info)
-                                print(info, response.ok)
+                                # response = self.stats.log(info)
+                                # print(info, response.ok)
+                                print(info)
 
-                    elif update.message.chat.type == "private":
+                    # elif update.message.chat.type == "private":
+                    else:
                         message = message.split(",")
-                        info["command"] = "d_private"
+                        info["command"] = "d_quick"
                         for msg in message:
                             if len(msg.strip()) != 0:
                                 info["word"] = msg.strip()
                                 text = self.definir(msg.strip())
-                                self.bot.sendMessage(
+                                self.send(
                                     chat_id=chat_id,
                                     text=text,
                                     parse_mode="Markdown",
                                     disable_web_page_preview=True,
                                     reply_to_message_id=message_id)
 
-                                response = self.stats.log(info)
-                                print(info, response.ok)
+                                # response = self.stats.log(info)
+                                # print(info, response.ok)
+                                print(info)
 
                     self.lastUpdate = update.update_id + 1
+
+    def send(self, **kwargs):
+        try:
+            self.bot.sendMessage(**kwargs)
+        except telegram.error.TelegramError:
+            pass
 
     def getInfo(self, update):
         chat_type = update.message.chat.type
@@ -298,7 +307,7 @@ class Diciobot():
             return self.quatroZeroQuatro(verbete, sugestao)
         fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
         tree = html.fromstring(pagina.text)
-        titulos = tree.xpath('//*[@class="tit-section"]/text()')
+        titulos = tree.xpath('//*[@id="tit-sinonimos"]/text()')
         sinonimos = ''
         for each in titulos:
             if 'Sinônimos' in each:
@@ -308,10 +317,10 @@ class Diciobot():
         sinonimos = '*' + ' '.join(sinonimos[:-1]) + '* _' + sinonimos[-1]
         sinonimos += "_\n"
         listaSinonimos = []
-        elemento = tree.xpath('//*[@class="adicional cols"][1]//a//node()')
-        if len(elemento) == 0:
-            elemento = tree.xpath('//*[@class="adicional"][1]//a//node()')
-        for each in elemento:
+        elem = tree.xpath('//*[@class="adicional sinonimos"][1]//a//node()')
+        if len(elem) == 0:
+            elem = tree.xpath('//*[@class="adicional"][1]//a//node()')
+        for each in elem:
             listaSinonimos.append('_' + each + '_')
         if len(listaSinonimos) > 1:
             sinonimos += ', '.join(listaSinonimos[:-1]) + ' e '
@@ -326,7 +335,7 @@ class Diciobot():
             return self.quatroZeroQuatro(verbete, sugestao)
         fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
         tree = html.fromstring(pagina.text)
-        titulos = tree.xpath('//*[@class="tit-section"]/text()')
+        titulos = tree.xpath('//*[@id="tit-antonimos"]/text()')
         antonimos = ''
         for each in titulos:
             if 'Antônimos' in each:
@@ -336,10 +345,10 @@ class Diciobot():
         antonimos = '*' + ' '.join(antonimos[:-1]) + '* _' + antonimos[-1]
         antonimos += "_\n"
         listaAntonimos = []
-        elemento = tree.xpath('//*[@class="adicional cols"][2]//a//node()')
-        if len(elemento) == 0:
-            elemento = tree.xpath('//*[@class="adicional"][2]//a//node()')
-        for each in elemento:
+        elem = tree.xpath('//*[@class="adicional sinonimos"][2]//a//node()')
+        if len(elem) == 0:
+            elem = tree.xpath('//*[@class="adicional"][2]//a//node()')
+        for each in elem:
             listaAntonimos.append('_' + each + '_')
         if len(listaAntonimos) > 1:
             antonimos += ', '.join(listaAntonimos[:-1]) + ' e '
@@ -514,7 +523,10 @@ class Diciobot():
     def buscar(self, verbete):
         base_url = "http://www.dicio.com.br"
         search_url = "http://www.dicio.com.br/pesquisa.php?q=" + verbete
-        busca = requests.get(search_url)
+        try:
+            busca = requests.get(search_url)
+        except requests.exceptions.TooManyRedirects:
+            pass
         tree = html.fromstring(busca.text)
         if "/pesquisa.php" in busca.url:
             # Retornou uma página de busca
