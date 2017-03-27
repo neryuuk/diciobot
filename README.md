@@ -1,5 +1,6 @@
-#Diciobot
-#####_Disponível em [@diciobot]_
+# Diciobot
+
+##### Disponível em [@diciobot]
 
 O **diciobot** consulta o [Dicio - Dicionário Online de Português], composto por **definições**, **significados**, **exemplos** e **rimas** que caracterizam mais de 400.000 palavras e verbetes.
 
@@ -9,7 +10,7 @@ Utiliza o wrapper em Python feito por [Leandro Toledo]
 
 Com apoio de [Rafael Melo] e [Felipe Santos]
 
-######(Contribuições de [Lucas], [Sofia], [Mari] e [vafjr87])
+###### (Contribuições de [Lucas], [Sofia], [Mari] e [vafjr87])
 [@diciobot]: <https://telegram.me/diciobot>
 [Dicio - Dicionário Online de Português]: <http://www.dicio.com.br/>
 [termos de uso do Dicio]: <http://www.dicio.com.br/termos_de_uso.html>
