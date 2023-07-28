@@ -2,3 +2,4 @@
 .vscode
 nohup.out
 config.json
+__pycache__
