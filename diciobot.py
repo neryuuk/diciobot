@@ -8,7 +8,6 @@ from lxml import html
 
 
 class Diciobot():
-
     """() -> ()
     Classe Diciobot.
     """
@@ -37,7 +36,7 @@ class Diciobot():
         """() -> ()
         Inicializa o bot.
         """
-        with open('diciobot.json') as config_file:
+        with open('config.json') as config_file:
             self.config = json.load(config_file)
         self.token = self.config["Telegram"]["token"]
         self.bot = telegram.Bot(self.token)
