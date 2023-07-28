@@ -209,7 +209,7 @@ def main() -> None:
     app = Application.builder().token(config["Telegram"]["token"]).build()
 
     # on different commands - answer in Telegram
-    app.add_handler(CommandHandler(["start", "help", "h"], help))
+    app.add_handler(CommandHandler(["start", "ajuda", "help", "h"], help))
     app.add_handler(CommandHandler(["definir", "d"], definir))
     app.add_handler(CommandHandler(["sinonimos", "s"], help))
     app.add_handler(CommandHandler(["antonimos", "a"], help))
