@@ -1,2 +1,4 @@
+.env
+.vscode
 nohup.out
 config.json
