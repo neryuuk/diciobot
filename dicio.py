@@ -6,16 +6,21 @@
 import requests
 from lxml import html
 from urllib import request, parse
-BASE_URL = "https://www.dicio.com.br"
 
 
-def buscar(verbete):
+def buildEndpoint(verbete: str = None, pesquisa: bool = False):
+    endpoint = "https://www.dicio.com.br"
+    if pesquisa:
+        endpoint += "/pesquisa.php?" + parse.urlencode({'q': verbete})
+    elif verbete is not None:
+        endpoint += f"/{verbete}/".replace("//", "/")
+
+    return endpoint
+
+
+def buscar(verbete: str) -> [any, any, str]:
     try:
-        busca = request.urlopen("".join([
-            BASE_URL,
-            "/pesquisa.php?",
-            parse.urlencode({'q': verbete})
-        ]))
+        busca = request.urlopen(buildEndpoint(verbete, True))
     except requests.exceptions.TooManyRedirects:
         pass
 
@@ -30,11 +35,11 @@ def buscar(verbete):
         pagina = tree.xpath('//div[@id="enchant"]')
         if len(pagina) == 0:
             # Não tem nenhuma sugestao para o verbete nao encontrado
-            return requests.get(BASE_URL + "/404"), None, ""
+            return requests.get(buildEndpoint("/404")), None, ""
 
         # Tem sugestões para o verbete não encontrado
         sugestao = pagina[0].text
-        return requests.get(BASE_URL + "/404"), None, sugestao
+        return requests.get(buildEndpoint("/404")), None, sugestao
 
     # Encontrou resultados pra busca do verbete
     pagina = tree.xpath('//a[@class="_sugg"]')
@@ -42,17 +47,17 @@ def buscar(verbete):
         content = each.xpath('span[@class="list-link"]/text()')
         # Encontrou o verbete solicitado nos resultados
         if content and content[0] and (content[0] == verbete):
-            busca = request.urlopen(BASE_URL + each.attrib["href"])
+            busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = html.fromstring(str(busca.read(), "utf-8"))
             return busca, tree, ""
 
     # Não encontrou o verbete solicitado nos resultados
-    busca = request.urlopen(BASE_URL + "/404")
+    busca = request.urlopen(buildEndpoint("/404"))
     tree = html.fromstring(str(busca.read(), "utf-8"))
     return busca, tree, sugestao
 
 
-def buscarDefinicao(verbete):
+def buscarDefinicao(verbete: str) -> str:
     pagina, tree, sugestao = buscar(verbete)
 
     if pagina.code == 404:
@@ -62,51 +67,62 @@ def buscarDefinicao(verbete):
         return ''
 
     fonte = "\n*Fonte:* " + pagina.url.replace("_", "\_")
-    titulos = tree.xpath('//h2[@class="tit-section"]/text()')
-    titulo = ""
-    for each in titulos:
-        if 'Definição' in each:
-            titulo = each.split(' ')
+    definicao = blocoDefinicao(tree)
+    significado = blocoSignificado(tree)
 
-    mensagem = ''
-    if len(titulo) != 0:
-        mensagem += "*{}* _{}_\n".format(" ".join(titulo[:-1]), titulo[-1])
-        definicao = tree.xpath('//p[@class="adicional"]//node()')
-        for each in definicao:
-            if type(each) == html.HtmlElement:
-                if each.tag == "br":
-                    mensagem += "\n"
-            else:
-                mensagem += each.strip().replace(":", ": ")
-        mensagem += "\n"
+    if (len(definicao) + len(significado)) == 0:
+        return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
+    elif len(significado) == 0:
+        definicao += "Significado: Não encontrado."
+        return definicao + fonte
 
+    return f"{definicao}{significado}{fonte}".replace("[", "\[")
+
+
+def blocoDefinicao(tree) -> str:
+    titulo = ''
+    for each in tree.xpath('//h2[@class="tit-section"]/text()'):
+        titulo = each.split(' ')
+
+    if len(titulo) == 0:
+        return ''
+
+    mensagem = f"*{' '.join(titulo[:-1])}* _{titulo[-1]}_"
+    definicao = tree.xpath('//p[@class="adicional"]//text()')
+    for each in definicao:
+        if "\n" in each and not mensagem.endswith("\n"):
+            mensagem += "\n"
+        if len(each.strip()) > 0:
+            mensagem += f"{each.strip()} "
+
+    return f"{mensagem}\n\n".replace(" \n", "\n").replace("\n ", "\n")
+
+
+def blocoSignificado(tree) -> str:
     titulos = tree.xpath('//h2[@class="tit-significado"]/text()')
-    if (len(titulos) + len(mensagem)) == 0:
-        return "_O verbete_ *{}* _não tem definição ou significado disponíveis._".format(verbete)
-    elif len(titulos) == 0:
-        mensagem += "Significado: Não encontrado."
-        return mensagem.replace("\n ", "\n") + fonte
+    if len(titulos) == 0:
+        return ""
 
     titulo = ""
     for each in titulos:
-        if 'Significado' in each:
-            titulo = each.split(' ')
-    mensagem += "*{}* _{}_\n".format(" ".join(titulo[:-1]), titulo[-1])
+        titulo = each.split(' ')
+    mensagem = f"*{' '.join(titulo[:-1])}* _{titulo[-1]}_\n"
     for each in tree.xpath('//p[@itemprop="description"]/span'):
         if type(each) == html.HtmlElement:
+            content = each.text_content().strip().replace("*", "\*")
             if "cl" in each.classes:
-                mensagem += each.text_content().strip().replace("*", "\*") + "\n"
+                mensagem += f"{content}\n"
             elif "tag" in each.classes:
-                mensagem += each.text_content().strip().replace("*", "\*")
+                mensagem += content
             else:
-                mensagem += each.text_content().strip().replace("*", "\*") + "\n"
+                mensagem += f"{content}\n"
         else:
-            mensagem += each.strip() + "\n"
+            mensagem += f"{each.strip()}\n"
 
-    return mensagem.replace("\n ", "\n").replace("[", "\[") + fonte
+    return f"{mensagem}".replace(" \n", "\n").replace("\n ", "\n")
 
 
-def quatroZeroQuatro(verbete, sugestao, verbo=False):
+def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
     naoEncontrado = "_O {}_ *{}* _não foi encontrado._".format(
         "verbo" if verbo else "verbete",
         verbete
@@ -119,8 +135,8 @@ def quatroZeroQuatro(verbete, sugestao, verbo=False):
     return naoEncontrado
 
 
-def buscarPalavraDoDia():
-    pagina = request.urlopen(BASE_URL)
+def buscarPalavraDoDia() -> str:
+    pagina = request.urlopen(buildEndpoint())
     tree = html.fromstring(str(pagina.read(), "utf-8"))
     doDia = tree.xpath("//*[@class='word-link']/text()")[0]
     content = "*Palavra do dia:* _{}_\n\n{}".format(
@@ -129,7 +145,7 @@ def buscarPalavraDoDia():
     return content
 
 
-def ajuda():
+def ajuda() -> str:
     return "\n".join([
         "As opções *disponíveis* são as _seguintes_:",
         "",
@@ -142,4 +158,13 @@ def ajuda():
         "/anagramas ou /ana - *anagramas* de um _verbete_",
         "/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_",
         "/dia - *Palavra do dia*."
+    ])
+
+
+def dica() -> str:
+    return " ".join([
+        "*Dica*: Quando estiver falando *diretamente* com o bot,",
+        "você pode mandar diversas palavras separadas por",
+        "*vírgula* para obter suas definições.",
+        "(Sem precisar do comando /definir)\n",
     ])
