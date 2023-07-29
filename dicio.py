@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# pylint: disable=unused-argument, wrong-import-position
+
+
 import requests
 from lxml import html
 from urllib import request, parse
