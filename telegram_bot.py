@@ -7,11 +7,11 @@ O diciobot consulta o [Dicio - Dicionário Online de Português],
 composto por definições, significados, exemplos e rimas
 que caracterizam mais de 400.000 palavras e verbetes.
 """
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
-from telegram import ForceReply, Update, __version__ as TG_VER
 import logging
-import json
 from dicio import *
+from os import getenv
+from telegram import constants, Update, __version__ as TG_VER
+from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
 try:
     from telegram import __version_info__
@@ -25,55 +25,145 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 
+LOG_LEVEL = logging.INFO
+BOT_ID = getenv('TELEGRAM_BOT_ID')
+SHORT_CMD = ["h", "d", "s", "a", "e", "c", "r", "ana", "t"]
+LONG_CMD = [
+    "fallback", "start", "ajuda",
+    "help", "definir", "sinonimos",
+    "antonimos", "exemplos", "conjugar",
+    "rimas", "anagramas", "tudo",
+    "dia", "hoje"
+]
+CMD_DICT = {
+    "fallback": "fallback",
+    "start": "start",
+    "help": "help",
+    "ajuda": "help",
+    "hoje": "dia",
+    "dia": "dia",
+    "definir": "definir",
+    "d": "definir",
+    "hoje": "hoje",
+    "h": "hoje",
+    "sinonimos": "sinonimos",
+    "s": "sinonimos",
+    "antonimos": "antonimos",
+    "a": "antonimos",
+    "exemplos": "exemplos",
+    "e": "exemplos",
+    "conjugar": "conjugar",
+    "c": "conjugar",
+    "rimas": "rimas",
+    "r": "rimas",
+    "anagramas": "anagramas",
+    "ana": "anagramas",
+    "tudo": "tudo",
+    "t": "tudo",
+}
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
+    level=LOG_LEVEL
 )
-logging.getLogger("httpx").setLevel(logging.INFO)
-logger = logging.getLogger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+
+def logHandler(update: Update) -> None:
+    if not update:
+        return
+
+    log = f"[{update.message.chat.type}]"
+    command = 'fallback'
+
+    if update.message.text.startswith("/"):
+        split = BOT_ID if BOT_ID in update.message.text else " "
+        [cmd, *_] = update.message.text.split(split, 1)
+        if cmd.lower().replace("/", "") in CMD_DICT:
+            command = CMD_DICT[cmd.lower().replace("/", "")]
+
+    if len(update.message.text) > 0:
+        log += f": {update.message.text}"
+
+    logging.getLogger(command).log(LOG_LEVEL, log)
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send a message when the command /start is issued."""
+    if not update:
+        return
+
+    logHandler(update)
+
+    reply = f"Bem vindo ao @diciobot!\nVamos começar?\n\n{ajuda()}"
+    if update.message.chat.type == constants.ChatType.PRIVATE:
+        reply += f"\n\n{dica()}"
+    await update.message.reply_markdown(reply)
 
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
-    if update and update.message:
-        await update.message.reply_markdown(ajuda())
+    if not update:
+        return
+
+    logHandler(update)
+
+    reply = ajuda()
+    if update.message.chat.type == constants.ChatType.PRIVATE:
+        reply += f"\n\n{dica()}"
+
+    await update.message.reply_markdown(ajuda())
 
 
 async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if (update and update.message):
-        await update.message.reply_markdown(
-            buscarPalavraDoDia(),
-            disable_web_page_preview=True
-        )
+    if not update:
+        return
+
+    logHandler(update)
+
+    await update.message.reply_markdown(
+        buscarPalavraDoDia(),
+        disable_web_page_preview=True
+    )
 
 
 async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if (update and update.message and update.message.text):
-        await update.message.reply_markdown(
-            buscarDefinicao(update.message.text.split(' ')[1]),
-            disable_web_page_preview=True
-        )
+    if not update:
+        return
+
+    logHandler(update)
+
+    await update.message.reply_markdown(
+        buscarDefinicao(update.message.text.split(' ')[1]),
+        disable_web_page_preview=True
+    )
 
 
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if (update and update.message and update.message.text):
-        words = update.message.text.split(',')
-        for word in words:
-            await update.message.reply_markdown(
-                buscarDefinicao(word.strip().lower()),
-                disable_web_page_preview=True
-            )
+    if not update:
+        return
+
+    logHandler(update)
+
+    words = update.message.text.split(',')
+    for word in words:
+        await update.message.reply_markdown(
+            buscarDefinicao(word.strip().lower()),
+            disable_web_page_preview=True
+        )
 
 
 def main() -> None:
     """Start the bot."""
-    # Create the Application and pass it your bot's token.
-    with open('config.json') as config_file:
-        config = json.load(config_file)
-    app = Application.builder().token(config["Telegram"]["token"]).build()
 
-    # on different commands - answer in Telegram
-    app.add_handler(CommandHandler(["start", "ajuda", "help", "h"], help))
+    # Create the app and pass the bot's token.
+    app = Application.builder().token(getenv('TELEGRAM_TOKEN')).build()
+
+    # Help Command handlers
+    app.add_handler(CommandHandler(["start"], start))
+    app.add_handler(CommandHandler(["ajuda", "help", "h"], help))
+
+    # Function Command handlers
     app.add_handler(CommandHandler(["definir", "d"], definir))
     app.add_handler(CommandHandler(["sinonimos", "s"], help))
     app.add_handler(CommandHandler(["antonimos", "a"], help))
@@ -84,7 +174,7 @@ def main() -> None:
     app.add_handler(CommandHandler(["tudo", "t"], help))
     app.add_handler(CommandHandler(["dia", "hoje"], dia))
 
-    # on non command i.e message - echo the message on Telegram
+    # Fallback handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback))
 
     # Run the bot until the user presses Ctrl-C
