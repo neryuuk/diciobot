@@ -122,3 +122,19 @@ def buscarPalavraDoDia():
         doDia, buscarDefinicao(doDia)
     )
     return content
+
+
+def ajuda():
+    return "\n".join([
+        "As opções *disponíveis* são as _seguintes_:",
+        "",
+        "/definir ou /d - *definição* de um _verbete_",
+        "/sinonimos ou /s - *sinônimos* de um _verbete_",
+        "/antonimos ou /a - *antônimos* de um _verbete_",
+        "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
+        "/conjugar ou /c - *conjugar* um _verbo_",
+        "/rimas ou /r - *rimas* de um _verbete_",
+        "/anagramas ou /ana - *anagramas* de um _verbete_",
+        "/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_",
+        "/dia - *Palavra do dia*."
+    ])

@@ -35,20 +35,7 @@ logger = logging.getLogger(__name__)
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
     if update and update.message:
-        helpMessage = "\n".join([
-            "As opções *disponíveis* são as _seguintes_:",
-            "",
-            "/definir ou /d - *definição* de um _verbete_",
-            "/sinonimos ou /s - *sinônimos* de um _verbete_",
-            "/antonimos ou /a - *antônimos* de um _verbete_",
-            "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
-            "/conjugar ou /c - *conjugar* um _verbo_",
-            "/rimas ou /r - *rimas* de um _verbete_",
-            "/anagramas ou /ana - *anagramas* de um _verbete_",
-            "/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_",
-            "/dia - *Palavra do dia*."
-        ])
-        await update.message.reply_markdown(helpMessage)
+        await update.message.reply_markdown(ajuda())
 
 
 async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
