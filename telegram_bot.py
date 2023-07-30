@@ -70,7 +70,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 def logHandler(update: Update) -> None:
-    if not update:
+    if (not update) or (not update.message):
         return
 
     log = f"[{update.message.chat.type}]"
@@ -90,7 +90,7 @@ def logHandler(update: Update) -> None:
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
-    if not update:
+    if (not update) or (not update.message):
         return
 
     logHandler(update)
@@ -103,7 +103,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
-    if not update:
+    if (not update) or (not update.message):
         return
 
     logHandler(update)
@@ -116,7 +116,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not update:
+    if (not update) or (not update.message):
         return
 
     logHandler(update)
@@ -128,7 +128,7 @@ async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not update:
+    if (not update) or (not update.message):
         return
 
     logHandler(update)
