@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
-
 """
 O diciobot consulta o [Dicio - Dicionário Online de Português],
 composto por definições, significados, exemplos e rimas
@@ -18,13 +17,12 @@ load_dotenv()
 try:
     from telegram import __version_info__
 except ImportError:
-    __version_info__ = (0, 0, 0, 0, 0)  # type: ignore[assignment]
+    __version_info__ = (0, 0, 0, 0, 0)
 
 if __version_info__ < (20, 0, 0, "alpha", 1):
     raise RuntimeError(
-        f"This example is not compatible with your current PTB version {TG_VER}. To view the "
-        f"{TG_VER} version of this example, "
-        f"visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
+        f"This example is not compatible with your current PTB version {TG_VER}."
+        f"Visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 
 LOG_LEVEL = logging.INFO
@@ -166,6 +164,7 @@ def main() -> None:
     app.add_handler(CommandHandler(["ajuda", "help", "h"], help))
 
     # Function Command handlers
+    app.add_handler(CommandHandler(["dia", "hoje"], dia))
     app.add_handler(CommandHandler(["definir", "d"], definir))
     app.add_handler(CommandHandler(["sinonimos", "s"], help))
     app.add_handler(CommandHandler(["antonimos", "a"], help))
@@ -174,7 +173,6 @@ def main() -> None:
     app.add_handler(CommandHandler(["rimas", "r"], help))
     app.add_handler(CommandHandler(["anagramas", "ana"], help))
     app.add_handler(CommandHandler(["tudo", "t"], help))
-    app.add_handler(CommandHandler(["dia", "hoje"], dia))
 
     # Fallback handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback))
