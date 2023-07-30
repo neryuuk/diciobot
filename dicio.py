@@ -143,6 +143,34 @@ def buscarPalavraDoDia() -> str:
     return content
 
 
+def buscarSinonimos(verbete: str) -> str:
+    pass
+
+
+def buscarAntonimos(verbete: str) -> str:
+    pass
+
+
+def buscarExemplos(verbete: str) -> str:
+    pass
+
+
+def buscarConjugacao(verbete: str) -> str:
+    pass
+
+
+def buscarRimas(verbete: str) -> str:
+    pass
+
+
+def buscarAnagramas(verbete: str) -> str:
+    pass
+
+
+def buscarTudo(verbete: str) -> str:
+    pass
+
+
 def ajuda() -> str:
     return "\n".join([
         "As opções *disponíveis* são as _seguintes_:",

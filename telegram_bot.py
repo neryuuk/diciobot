@@ -139,6 +139,34 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
+async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pass
+
+
+async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pass
+
+
+async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pass
+
+
+async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pass
+
+
+async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pass
+
+
+async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pass
+
+
+async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    pass
+
+
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not update:
         return
@@ -166,13 +194,13 @@ def main() -> None:
     # Function Command handlers
     app.add_handler(CommandHandler(["dia", "hoje"], dia))
     app.add_handler(CommandHandler(["definir", "d"], definir))
-    app.add_handler(CommandHandler(["sinonimos", "s"], help))
-    app.add_handler(CommandHandler(["antonimos", "a"], help))
-    app.add_handler(CommandHandler(["exemplos", "e"], help))
-    app.add_handler(CommandHandler(["conjugar", "c"], help))
-    app.add_handler(CommandHandler(["rimas", "r"], help))
-    app.add_handler(CommandHandler(["anagramas", "ana"], help))
-    app.add_handler(CommandHandler(["tudo", "t"], help))
+    app.add_handler(CommandHandler(["sinonimos", "s"], sinonimos))
+    app.add_handler(CommandHandler(["antonimos", "a"], antonimos))
+    app.add_handler(CommandHandler(["exemplos", "e"], exemplos))
+    app.add_handler(CommandHandler(["conjugar", "c"], conjugar))
+    app.add_handler(CommandHandler(["rimas", "r"], rimas))
+    app.add_handler(CommandHandler(["anagramas", "ana"], anagramas))
+    app.add_handler(CommandHandler(["tudo", "t"], tudo))
 
     # Fallback handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, fallback))
