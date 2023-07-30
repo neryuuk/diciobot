@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
 
@@ -10,8 +10,10 @@ que caracterizam mais de 400.000 palavras e verbetes.
 import logging
 from dicio import *
 from os import getenv
+from dotenv import load_dotenv
 from telegram import constants, Update, __version__ as TG_VER
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+load_dotenv()
 
 try:
     from telegram import __version_info__
