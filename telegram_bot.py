@@ -10,7 +10,7 @@ import logging
 from dicio import *
 from os import getenv
 from dotenv import load_dotenv
-from telegram import constants, Update, __version__ as TG_VER
+from telegram import Update, __version__ as TG_VER
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 load_dotenv()
 
@@ -79,23 +79,34 @@ def isValid(update: Update):
     return True
 
 
-def logHandler(update: Update) -> None:
-    if not isValid(update):
-        return
-
-    log = f"[{update.message.chat.type}]"
-    command = 'fallback'
+def command(update: Update) -> str:
+    cmd = 'fallback'
 
     if update.message.text.startswith("/"):
         split = BOT_ID if BOT_ID in update.message.text else " "
-        [cmd, *_] = update.message.text.split(split, 1)
-        if cmd.lower().replace("/", "") in CMD_DICT:
-            command = CMD_DICT[cmd.lower().replace("/", "")]
+        [cmd, *_] = update.message.text.lower().replace("/", "").split(split, 1)
+
+    if cmd in CMD_DICT:
+        return CMD_DICT[cmd]
+    else:
+        return 'fallback'
+
+
+def logHandler(update: Update) -> None:
+    if not isValid(update):
+        return
+    identity = [str(update.message.chat.type)]
+    if update.message.chat.type != update.message.chat.PRIVATE:
+        identity.append(str(update.message.chat.id))
+    identity.append(str(update.message.from_user.id))
+    identity.append(str(update.message.from_user.username))
+
+    log = f'[{",".join(identity)}]'
 
     if len(update.message.text) > 0:
         log += f": {update.message.text}"
 
-    logging.getLogger(command).log(LOG_LEVEL, log)
+    logging.getLogger(command(update)).log(LOG_LEVEL, log)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -105,7 +116,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logHandler(update)
 
     reply = f"Bem vindo ao @diciobot!\nVamos começar?\n\n{ajuda()}"
-    if update.message.chat.type == constants.ChatType.PRIVATE:
+    if update.message.chat.type == update.message.chat.PRIVATE:
         reply += f"\n\n{dica()}"
     await update.message.reply_markdown(reply)
 
@@ -117,7 +128,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logHandler(update)
 
     reply = ajuda()
-    if update.message.chat.type == constants.ChatType.PRIVATE:
+    if update.message.chat.type == update.message.chat.PRIVATE:
         reply += f"\n\n{dica()}"
 
     await update.message.reply_markdown(ajuda())
@@ -149,49 +160,49 @@ async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    pass
+    await update.message.reply_markdown(manutencao())
 
 
 async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    pass
+    await update.message.reply_markdown(manutencao())
 
 
 async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    pass
+    await update.message.reply_markdown(manutencao())
 
 
 async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    pass
+    await update.message.reply_markdown(manutencao())
 
 
 async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    pass
+    await update.message.reply_markdown(manutencao())
 
 
 async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    pass
+    await update.message.reply_markdown(manutencao())
 
 
 async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    pass
+    await update.message.reply_markdown(manutencao())
 
 
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
