@@ -69,8 +69,18 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
+def isValid(update: Update):
+    if not update:
+        return False
+    if not update.message:
+        return False
+    if not update.message.text:
+        return False
+    return True
+
+
 def logHandler(update: Update) -> None:
-    if (not update) or (not update.message):
+    if not isValid(update):
         return
 
     log = f"[{update.message.chat.type}]"
@@ -90,9 +100,8 @@ def logHandler(update: Update) -> None:
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
-    if (not update) or (not update.message):
+    if not isValid(update):
         return
-
     logHandler(update)
 
     reply = f"Bem vindo ao @diciobot!\nVamos começar?\n\n{ajuda()}"
@@ -103,9 +112,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
-    if (not update) or (not update.message):
+    if not isValid(update):
         return
-
     logHandler(update)
 
     reply = ajuda()
@@ -116,9 +124,8 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if (not update) or (not update.message):
+    if not isValid(update):
         return
-
     logHandler(update)
 
     await update.message.reply_markdown(
@@ -128,9 +135,8 @@ async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if (not update) or (not update.message):
+    if not isValid(update):
         return
-
     logHandler(update)
 
     await update.message.reply_markdown(
@@ -140,37 +146,57 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not isValid(update):
+        return
+    logHandler(update)
     pass
 
 
 async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not isValid(update):
+        return
+    logHandler(update)
     pass
 
 
 async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not isValid(update):
+        return
+    logHandler(update)
     pass
 
 
 async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not isValid(update):
+        return
+    logHandler(update)
     pass
 
 
 async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not isValid(update):
+        return
+    logHandler(update)
     pass
 
 
 async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not isValid(update):
+        return
+    logHandler(update)
     pass
 
 
 async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not isValid(update):
+        return
+    logHandler(update)
     pass
 
 
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not update:
+    if not isValid(update):
         return
-
     logHandler(update)
 
     words = update.message.text.split(',')
