@@ -16,7 +16,7 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str) -> [any, any, str]:
+def buscar(verbete: str) -> (any, any, str):
     try:
         busca = request.urlopen(buildEndpoint(verbete, True))
     except requests.exceptions.TooManyRedirects:
@@ -33,11 +33,11 @@ def buscar(verbete: str) -> [any, any, str]:
         pagina = tree.xpath('//div[@id="enchant"]')
         if len(pagina) == 0:
             # Não tem nenhuma sugestao para o verbete nao encontrado
-            return requests.get(buildEndpoint("/404")), None, ""
+            return None, None, ""
 
         # Tem sugestões para o verbete não encontrado
         sugestao = pagina[0].text
-        return requests.get(buildEndpoint("/404")), None, sugestao
+        return None, None, sugestao
 
     # Encontrou resultados pra busca do verbete
     pagina = tree.xpath('//a[@class="_sugg"]')
@@ -58,7 +58,7 @@ def buscar(verbete: str) -> [any, any, str]:
 def buscarDefinicao(verbete: str) -> str:
     pagina, tree, sugestao = buscar(verbete)
 
-    if pagina.code == 404:
+    if pagina is None:
         return quatroZeroQuatro(verbete, sugestao)
 
     if tree is None:
