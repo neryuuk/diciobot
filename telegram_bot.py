@@ -113,11 +113,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
     if not isValid(update):
         return
-    logHandler(update)
 
+    logHandler(update)
     reply = f"Bem vindo ao @diciobot!\nVamos começar?\n\n{ajuda()}"
     if update.message.chat.type == update.message.chat.PRIVATE:
         reply += f"\n\n{dica()}"
+
     await update.message.reply_markdown(reply)
 
 
@@ -125,8 +126,8 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
     if not isValid(update):
         return
-    logHandler(update)
 
+    logHandler(update)
     reply = ajuda()
     if update.message.chat.type == update.message.chat.PRIVATE:
         reply += f"\n\n{dica()}"
@@ -137,8 +138,8 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
-    logHandler(update)
 
+    logHandler(update)
     await update.message.reply_markdown(
         buscarPalavraDoDia(),
         disable_web_page_preview=True
@@ -148,8 +149,8 @@ async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
-    logHandler(update)
 
+    logHandler(update)
     await update.message.reply_markdown(
         buscarDefinicao(update.message.text),
         disable_web_page_preview=True
@@ -159,6 +160,7 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
     logHandler(update)
     await update.message.reply_markdown(
         buscarSinonimos(update.message.text),
@@ -169,6 +171,7 @@ async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
     logHandler(update)
     await update.message.reply_markdown(
         buscarAntonimos(update.message.text),
@@ -179,6 +182,7 @@ async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
     logHandler(update)
     await update.message.reply_markdown(manutencao())
 
@@ -186,6 +190,7 @@ async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
     logHandler(update)
     await update.message.reply_markdown(manutencao())
 
@@ -193,6 +198,7 @@ async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
     logHandler(update)
     await update.message.reply_markdown(manutencao())
 
@@ -200,6 +206,7 @@ async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
     logHandler(update)
     await update.message.reply_markdown(manutencao())
 
@@ -207,6 +214,7 @@ async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
     logHandler(update)
     await update.message.reply_markdown(manutencao())
 
@@ -215,7 +223,6 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-
     words = update.message.text.split(',')
     for word in words:
         await update.message.reply_markdown(
