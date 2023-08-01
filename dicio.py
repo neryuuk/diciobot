@@ -143,8 +143,43 @@ def buscarPalavraDoDia() -> str:
     return content
 
 
+def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
+    pagina, tree, sugestao = buscar(verbete)
+
+    if pagina is None:
+        return quatroZeroQuatro(verbete, sugestao)
+
+    if tree is None:
+        return ''
+
+    titulos = tree.xpath(
+        '//h2[contains(@class, "subtitle-significado")]//text()'
+    )
+
+    resultado = ''
+    indice = None
+    for i, each in enumerate(titulos):
+        if tipo in each:
+            resultado = each.split(' ')
+            indice = i
+
+    if len(resultado) == 0:
+        return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._{fonte(pagina)}"
+
+    resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n"
+
+    blocos = tree.xpath('//p[@class="adicional sinonimos"]')[indice]
+    lista = blocos.xpath('a//text()')
+
+    if len(lista) > 1:
+        resultado += ', '.join(lista[:-1]) + ' e '
+    resultado += lista[-1]
+
+    return f"{resultado}{fonte(pagina)}"
+
+
 def buscarSinonimos(verbete: str) -> str:
-    pass
+    return buscarSinonimosAntonimos(verbete, "Sinônimos")
 
 
 def buscarAntonimos(verbete: str) -> str:
@@ -175,12 +210,21 @@ def manutencao() -> str:
     return f"Essa opção está em manutenção :(\n\n{ajuda()}"
 
 
+def fonte(pagina) -> str:
+    if not pagina:
+        return ''
+    if not pagina.url:
+        return ''
+
+    return "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+
+
 def ajuda() -> str:
     return "\n".join([
         "As opções *disponíveis* são as _seguintes_:",
         "",
         "/definir ou /d - *definição* de um _verbete_",
-        # "/sinonimos ou /s - *sinônimos* de um _verbete_",
+        "/sinonimos ou /s - *sinônimos* de um _verbete_",
         # "/antonimos ou /a - *antônimos* de um _verbete_",
         # "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
         # "/conjugar ou /c - *conjugar* um _verbo_",
