@@ -222,6 +222,10 @@ async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
+
+    if not isPrivate(update):
+        return
+
     logHandler(update)
     words = update.message.text.split(',')
     for word in words:
