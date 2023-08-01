@@ -56,6 +56,10 @@ def buscar(verbete: str) -> (any, any, str):
 
 
 def buscarDefinicao(verbete: str) -> str:
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando("definir")
+
     pagina, tree, sugestao = buscar(verbete)
 
     if pagina is None:
@@ -143,6 +147,10 @@ def buscarPalavraDoDia() -> str:
 
 
 def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando(tipo.lower().replace("ô", "o"))
+
     pagina, tree, sugestao = buscar(verbete)
 
     if pagina is None:
@@ -203,6 +211,26 @@ def buscarAnagramas(verbete: str) -> str:
 
 def buscarTudo(verbete: str) -> str:
     pass
+
+
+def palavra(conteudo: str) -> str:
+    if not conteudo.lower().strip():
+        return None
+
+    conteudo = conteudo.lower().strip().split(' ', 1)
+    if len(conteudo) < 2:
+        return None
+
+    return conteudo[-1]
+
+
+def erroPalavraFaltando(comando: str) -> str:
+    return "\n".join([
+        "Você precisa informar uma palavra junto com o comando.",
+        "", "Exemplos:",
+        f"/definir palavra",
+        f"/sinonimos palavra",
+    ])
 
 
 def manutencao() -> str:

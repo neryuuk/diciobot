@@ -151,7 +151,7 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logHandler(update)
 
     await update.message.reply_markdown(
-        buscarDefinicao(update.message.text.split(' ')[-1]),
+        buscarDefinicao(update.message.text),
         disable_web_page_preview=True
     )
 
@@ -161,7 +161,7 @@ async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     logHandler(update)
     await update.message.reply_markdown(
-        buscarSinonimos(update.message.text.split(' ')[-1]),
+        buscarSinonimos(update.message.text),
         disable_web_page_preview=True
     )
 
@@ -171,7 +171,7 @@ async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     logHandler(update)
     await update.message.reply_markdown(
-        buscarAntonimos(update.message.text.split(' ')[-1]),
+        buscarAntonimos(update.message.text),
         disable_web_page_preview=True
     )
 
