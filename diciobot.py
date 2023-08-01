@@ -7,7 +7,6 @@ class Diciobot():
         tudo.append(self.definir(verbete))
         if "_não foi encontrado._" in tudo[0]:
             return tudo
-        tudo.append(self.antonimos(verbete))
         tudo.append(self.exemplos(verbete))
         tudo.append(self.conjugar(verbete))
         tudo.append(self.rimas(verbete))
@@ -19,34 +18,6 @@ class Diciobot():
         for each in remover:
             tudo.pop(each)
         return tudo
-
-    def antonimos(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete
-        naoDisponivel += "* _não tem antônimos disponíveis._"
-        pagina, sugestao = self.buscar(verbete)
-        if pagina.status_code == 404:
-            return self.quatroZeroQuatro(verbete, sugestao)
-        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
-        tree = html.fromstring(pagina.text)
-        titulos = tree.xpath('//*[@id="tit-antonimos"]/text()')
-        antonimos = ''
-        for each in titulos:
-            if 'Antônimos' in each:
-                antonimos = each.split(' ')
-        if len(antonimos) == 0:
-            return naoDisponivel + fonte
-        antonimos = '*' + ' '.join(antonimos[:-1]) + '* _' + antonimos[-1]
-        antonimos += "_\n"
-        listaAntonimos = []
-        elem = tree.xpath('//*[@class="adicional sinonimos"][2]//a//node()')
-        if len(elem) == 0:
-            elem = tree.xpath('//*[@class="adicional"][2]//a//node()')
-        for each in elem:
-            listaAntonimos.append('_' + each + '_')
-        if len(listaAntonimos) > 1:
-            antonimos += ', '.join(listaAntonimos[:-1]) + ' e '
-        antonimos += listaAntonimos[-1]
-        return antonimos + fonte
 
     def exemplos(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete

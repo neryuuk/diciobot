@@ -56,6 +56,10 @@ def buscar(verbete: str) -> (any, any, str):
 
 
 def buscarDefinicao(verbete: str) -> str:
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando("definir")
+
     pagina, tree, sugestao = buscar(verbete)
 
     if pagina is None:
@@ -64,7 +68,6 @@ def buscarDefinicao(verbete: str) -> str:
     if tree is None:
         return ''
 
-    fonte = "\n*Fonte:* " + pagina.url.replace("_", "\_")
     definicao = blocoDefinicao(tree)
     significado = blocoSignificado(tree)
 
@@ -72,9 +75,9 @@ def buscarDefinicao(verbete: str) -> str:
         return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
     elif len(significado) == 0:
         definicao += "Significado: Não encontrado."
-        return definicao + fonte
+        return definicao + fonte(pagina)
 
-    return f"{definicao}{significado}{fonte}".replace("[", "\[")
+    return f"{definicao}{significado}{fonte(pagina)}".replace("[", "\[")
 
 
 def blocoDefinicao(tree) -> str:
@@ -144,6 +147,10 @@ def buscarPalavraDoDia() -> str:
 
 
 def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando(tipo.lower().replace("ô", "o"))
+
     pagina, tree, sugestao = buscar(verbete)
 
     if pagina is None:
@@ -183,7 +190,7 @@ def buscarSinonimos(verbete: str) -> str:
 
 
 def buscarAntonimos(verbete: str) -> str:
-    pass
+    return buscarSinonimosAntonimos(verbete, "Antônimos")
 
 
 def buscarExemplos(verbete: str) -> str:
@@ -206,6 +213,26 @@ def buscarTudo(verbete: str) -> str:
     pass
 
 
+def palavra(conteudo: str) -> str:
+    if not conteudo.lower().strip():
+        return None
+
+    conteudo = conteudo.lower().strip().split(' ', 1)
+    if len(conteudo) < 2:
+        return None
+
+    return conteudo[-1]
+
+
+def erroPalavraFaltando(comando: str) -> str:
+    return "\n".join([
+        "Você precisa informar uma palavra junto com o comando.",
+        "", "Exemplos:",
+        f"/definir palavra",
+        f"/sinonimos palavra",
+    ])
+
+
 def manutencao() -> str:
     return f"Essa opção está em manutenção :(\n\n{ajuda()}"
 
@@ -225,7 +252,7 @@ def ajuda() -> str:
         "",
         "/definir ou /d - *definição* de um _verbete_",
         "/sinonimos ou /s - *sinônimos* de um _verbete_",
-        # "/antonimos ou /a - *antônimos* de um _verbete_",
+        "/antonimos ou /a - *antônimos* de um _verbete_",
         # "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
         # "/conjugar ou /c - *conjugar* um _verbo_",
         # "/rimas ou /r - *rimas* de um _verbete_",
