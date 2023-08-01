@@ -140,10 +140,7 @@ def buscarPalavraDoDia() -> str:
     pagina = request.urlopen(buildEndpoint())
     tree = html.fromstring(str(pagina.read(), "utf-8"))
     doDia = tree.xpath("//*[@class='word-link']/text()")[0]
-    content = "*Palavra do dia:* _{}_\n\n{}".format(
-        doDia, buscarDefinicao(doDia)
-    )
-    return content
+    return f"*Palavra do dia:* _{doDia}_\n\n{buscarDefinicao(f'/dia {doDia}')}"
 
 
 def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
