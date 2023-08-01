@@ -224,6 +224,10 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
 
+def isPrivate(update: Update) -> bool:
+    return update.message.chat.type == update.message.chat.PRIVATE
+
+
 def main() -> None:
     """Start the bot."""
 
