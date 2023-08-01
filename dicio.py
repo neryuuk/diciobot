@@ -64,7 +64,6 @@ def buscarDefinicao(verbete: str) -> str:
     if tree is None:
         return ''
 
-    fonte = "\n*Fonte:* " + pagina.url.replace("_", "\_")
     definicao = blocoDefinicao(tree)
     significado = blocoSignificado(tree)
 
@@ -72,9 +71,9 @@ def buscarDefinicao(verbete: str) -> str:
         return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
     elif len(significado) == 0:
         definicao += "Significado: Não encontrado."
-        return definicao + fonte
+        return definicao + fonte(pagina)
 
-    return f"{definicao}{significado}{fonte}".replace("[", "\[")
+    return f"{definicao}{significado}{fonte(pagina)}".replace("[", "\[")
 
 
 def blocoDefinicao(tree) -> str:
