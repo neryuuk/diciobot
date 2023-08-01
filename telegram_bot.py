@@ -129,7 +129,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     reply = ajuda()
-    if update.message.chat.type == update.message.chat.PRIVATE:
+    if isPrivate(update):
         reply += f"\n\n{dica()}"
 
     await update.message.reply_markdown(ajuda())
