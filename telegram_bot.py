@@ -170,7 +170,10 @@ async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not isValid(update):
         return
     logHandler(update)
-    await update.message.reply_markdown(manutencao())
+    await update.message.reply_markdown(
+        buscarAntonimos(update.message.text.split(' ')[-1]),
+        disable_web_page_preview=True
+    )
 
 
 async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
