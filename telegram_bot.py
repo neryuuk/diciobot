@@ -151,7 +151,7 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logHandler(update)
 
     await update.message.reply_markdown(
-        buscarDefinicao(update.message.text.split(' ')[1]),
+        buscarDefinicao(update.message.text.split(' ')[-1]),
         disable_web_page_preview=True
     )
 
