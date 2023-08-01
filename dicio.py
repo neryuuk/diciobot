@@ -182,7 +182,7 @@ def buscarSinonimos(verbete: str) -> str:
 
 
 def buscarAntonimos(verbete: str) -> str:
-    pass
+    return buscarSinonimosAntonimos(verbete, "Antônimos")
 
 
 def buscarExemplos(verbete: str) -> str:
@@ -224,7 +224,7 @@ def ajuda() -> str:
         "",
         "/definir ou /d - *definição* de um _verbete_",
         "/sinonimos ou /s - *sinônimos* de um _verbete_",
-        # "/antonimos ou /a - *antônimos* de um _verbete_",
+        "/antonimos ou /a - *antônimos* de um _verbete_",
         # "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
         # "/conjugar ou /c - *conjugar* um _verbo_",
         # "/rimas ou /r - *rimas* de um _verbete_",
