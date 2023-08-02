@@ -27,32 +27,27 @@ def buscar(verbete: str) -> (any, any, str):
         return busca, tree, ""
 
     # Retornou uma página de busca
-    pagina = tree.xpath('//div[@class="found"]')
+    pagina = tree.xpath('//ul[@class="resultados"]/li/a[@class="_sugg"]')
     if len(pagina) == 0:
-        # Não encontrou resultados pra busca do verbete
-        pagina = tree.xpath('//div[@id="enchant"]')
-        if len(pagina) == 0:
-            # Não tem nenhuma sugestao para o verbete nao encontrado
-            return None, None, ""
-
-        # Tem sugestões para o verbete não encontrado
-        sugestao = pagina[0].text
-        return None, None, sugestao
+        # Não tem nenhuma sugestao para o verbete nao encontrado
+        return None, None, ""
 
     # Encontrou resultados pra busca do verbete
-    pagina = tree.xpath('//a[@class="_sugg"]')
     for each in pagina:
         content = each.xpath('span[@class="list-link"]/text()')
         # Encontrou o verbete solicitado nos resultados
-        if content and content[0] and (content[0] == verbete):
+        if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = html.fromstring(str(busca.read(), "utf-8"))
             return busca, tree, ""
 
-    # Não encontrou o verbete solicitado nos resultados
-    busca = request.urlopen(buildEndpoint("/404"))
-    tree = html.fromstring(str(busca.read(), "utf-8"))
-    return busca, tree, sugestao
+    try:
+        sugestao = pagina[0].xpath('span[@class="list-link"]/text()')[0]
+
+        # Não encontrou o verbete solicitado nos resultados
+        return None, None, sugestao.strip()
+    except:
+        return None, None, ""
 
 
 def buscarDefinicao(verbete: str) -> str:
