@@ -3,6 +3,6 @@
 # pylint: disable=unused-argument, wrong-import-position
 from dicio import *
 
-print(buscarPalavraDoDia())
+# print(buscarPalavraDoDia())
 
-print(buscarDefinicao("ornitorrinco"))
+print(buscarRimas("/rimas primordial"))
