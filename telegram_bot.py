@@ -200,7 +200,10 @@ async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(manutencao())
+    await update.message.reply_markdown(
+        buscarRimas(update.message.text),
+        disable_web_page_preview=True
+    )
 
 
 async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
