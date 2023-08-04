@@ -22,3 +22,7 @@ print(buscar("/a gorgona", antonimos))
 print(buscar("/r carro", rimas))
 
 print(buscar("/r orfã", rimas))
+
+print(buscar("/a carro", anagramas))
+
+print(buscar("/a chicharro", anagramas))
