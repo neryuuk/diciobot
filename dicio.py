@@ -16,21 +16,28 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str) -> (any, any, str):
+def buscar(verbete: str, comando) -> str:
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando(comando)
+
     try:
         busca = request.urlopen(buildEndpoint(verbete, True))
     except requests.exceptions.TooManyRedirects:
         pass
 
     tree = html.fromstring(str(busca.read(), "utf-8"))
+    if tree is None:
+        return ''
+
     if "/pesquisa.php" not in busca.url:
-        return busca, tree, ""
+        return f"{comando(verbete, tree)}{fonte(busca.url)}"
 
     # Retornou uma página de busca
     pagina = tree.xpath('//ul[@class="resultados"]/li/a[@class="_sugg"]')
     if len(pagina) == 0:
         # Não tem nenhuma sugestao para o verbete nao encontrado
-        return None, None, ""
+        return ''
 
     # Encontrou resultados pra busca do verbete
     for each in pagina:
@@ -39,15 +46,15 @@ def buscar(verbete: str) -> (any, any, str):
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = html.fromstring(str(busca.read(), "utf-8"))
-            return busca, tree, ""
+            return f"{comando(verbete, tree)}{fonte(busca.url)}"
 
     try:
         sugestao = pagina[0].xpath('span[@class="list-link"]/text()')[0]
 
         # Não encontrou o verbete solicitado nos resultados
-        return None, None, sugestao.strip()
+        return quatroZeroQuatro(verbete, sugestao.strip())
     except:
-        return None, None, ""
+        return quatroZeroQuatro(verbete, '')
 
 
 def buscarDefinicao(verbete: str) -> str:
@@ -243,11 +250,11 @@ def palavra(conteudo: str) -> str:
     return conteudo[-1]
 
 
-def erroPalavraFaltando(comando: str) -> str:
+def erroPalavraFaltando(comando) -> str:
     return "\n".join([
         "Você precisa informar uma palavra junto com o comando.",
         "", "Exemplo:",
-        f"/{comando} palavra",
+        f"/{comando.__name__} palavra",
     ])
 
 
@@ -258,10 +265,8 @@ def manutencao() -> str:
 def fonte(pagina) -> str:
     if not pagina:
         return ''
-    if not pagina.url:
-        return ''
 
-    return "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+    return f"\n\n*Fonte:* {pagina}"
 
 
 def ajuda() -> str:
