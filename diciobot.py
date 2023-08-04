@@ -9,7 +9,6 @@ class Diciobot():
             return tudo
         tudo.append(self.exemplos(verbete))
         tudo.append(self.conjugar(verbete))
-        tudo.append(self.rimas(verbete))
         tudo.append(self.anagramas(verbete))
         remover = []
         for i in range(len(tudo)):
@@ -121,28 +120,6 @@ class Diciobot():
                         conjugacao += each.replace("*", "\*")
                 conjugacao += "\n"
         return conjugacao.replace("\n ", "\n") + fonte
-
-    def rimas(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete
-        naoDisponivel += "* _não tem rimas disponíveis._"
-        pagina, sugestao = self.buscar(verbete)
-        if pagina.status_code == 404:
-            return self.quatroZeroQuatro(verbete, sugestao)
-        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
-        tree = html.fromstring(pagina.text)
-        titulos = tree.xpath('//*[@class="tit-other"]/text()')
-        rimas = ''
-        for each in titulos:
-            if 'Rimas' in each:
-                rimas = each.split(' ')
-        if len(rimas) == 0:
-            return naoDisponivel + fonte
-        rimas = '*' + ' '.join(rimas[:-1]) + '* _' + rimas[-1] + "_\n"
-        elemento = tree.xpath('//*[@class="list col-4 small"][1]/li/text()')
-        if len(elemento) > 1:
-            rimas += '_' + ', '.join(elemento[:-1]) + '_ e '
-        rimas += '_' + elemento[-1] + "_"
-        return rimas + fonte
 
     def anagramas(self, verbete):
         naoDisponivel = "_O verbete_ *" + verbete
