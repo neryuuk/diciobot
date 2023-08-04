@@ -219,9 +219,8 @@ def palavra(conteudo: str) -> str:
 def erroPalavraFaltando(comando: str) -> str:
     return "\n".join([
         "Você precisa informar uma palavra junto com o comando.",
-        "", "Exemplos:",
-        f"/definir palavra",
-        f"/sinonimos palavra",
+        "", "Exemplo:",
+        f"/{comando} palavra",
     ])
 
 
