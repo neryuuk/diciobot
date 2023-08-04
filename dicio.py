@@ -157,12 +157,12 @@ def buscarSinonimosAntonimos(verbete: str, tree, tipo: str = 'Sinônimos') -> st
     return resultado + lista[-1]
 
 
-def buscarSinonimos(verbete: str) -> str:
-    return buscarSinonimosAntonimos(verbete, "Sinônimos")
+def sinonimos(verbete: str, tree) -> str:
+    return buscarSinonimosAntonimos(verbete, tree, "Sinônimos")
 
 
-def buscarAntonimos(verbete: str) -> str:
-    return buscarSinonimosAntonimos(verbete, "Antônimos")
+def antonimos(verbete: str, tree) -> str:
+    return buscarSinonimosAntonimos(verbete, tree, "Antônimos")
 
 
 def buscarExemplos(verbete: str) -> str:
