@@ -200,6 +200,10 @@ def buscarAnagramas(verbete: str) -> str:
     pass
 
 
+def anagramas(verbete: str, tree) -> str:
+    return rimasAnagramas(verbete, tree, 'Anagramas')
+
+
 def buscarTudo(verbete: str) -> str:
     pass
 
@@ -244,7 +248,7 @@ def ajuda() -> str:
         # "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
         # "/conjugar ou /c - *conjugar* um _verbo_",
         "/rimas ou /r - *rimas* de um _verbete_",
-        # "/anagramas ou /ana - *anagramas* de um _verbete_",
+        "/anagramas ou /ana - *anagramas* de um _verbete_",
         # "/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_",
         "/dia - *Palavra do dia*."
     ])
