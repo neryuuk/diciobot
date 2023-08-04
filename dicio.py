@@ -125,26 +125,14 @@ def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
     return f"{naoEncontrado}\n\n_Você quis dizer_ *{sugestao}*?"
 
 
-def buscarPalavraDoDia() -> str:
+def dia() -> str:
     pagina = request.urlopen(buildEndpoint())
     tree = html.fromstring(str(pagina.read(), "utf-8"))
     doDia = tree.xpath("//*[@class='word-link']/text()")[0]
-    return f"*Palavra do dia:* _{doDia}_\n\n{buscarDefinicao(f'/dia {doDia}')}"
+    return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)}"
 
 
-def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
-    verbete = palavra(verbete)
-    if not verbete:
-        return erroPalavraFaltando(tipo.lower().replace("ô", "o"))
-
-    pagina, tree, sugestao = buscar(verbete)
-
-    if pagina is None:
-        return quatroZeroQuatro(verbete, sugestao)
-
-    if tree is None:
-        return ''
-
+def buscarSinonimosAntonimos(verbete: str, tree, tipo: str = 'Sinônimos') -> str:
     titulos = tree.xpath(
         '//h2[contains(@class, "subtitle-significado")]//text()'
     )
@@ -157,7 +145,7 @@ def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
             indice = i
 
     if len(resultado) == 0:
-        return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._{fonte(pagina)}"
+        return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
 
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n"
 
@@ -166,9 +154,7 @@ def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
 
     if len(lista) > 1:
         resultado += ', '.join(lista[:-1]) + ' e '
-    resultado += lista[-1]
-
-    return f"{resultado}{fonte(pagina)}"
+    return resultado + lista[-1]
 
 
 def buscarSinonimos(verbete: str) -> str:
