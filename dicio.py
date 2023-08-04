@@ -194,7 +194,34 @@ def buscarConjugacao(verbete: str) -> str:
 
 
 def buscarRimas(verbete: str) -> str:
-    pass
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando("rimas")
+
+    pagina, tree, sugestao = buscar(verbete)
+
+    if pagina is None:
+        return quatroZeroQuatro(verbete, sugestao)
+
+    if tree is None:
+        return ''
+
+    resultado = ''
+    for each in tree.xpath('//*[@class="tit-other"]/text()'):
+        if 'Rimas' in each:
+            resultado = each.split(' ')
+    if len(resultado) == 0:
+        return f"_O verbete_ *{verbete}* _não tem rimas disponíveis._{fonte(pagina)}"
+
+    resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
+    elemento = tree.xpath(
+        '//div[@class="wrap-section"]/ul[contains(@class, "list")]/li//text()'
+    )
+    if len(elemento) > 1:
+        resultado += f"{', '.join(elemento[:-1])} e "
+    resultado += elemento[-1]
+
+    return f"{resultado}{fonte(pagina)}"
 
 
 def buscarAnagramas(verbete: str) -> str:
