@@ -194,7 +194,34 @@ def buscarConjugacao(verbete: str) -> str:
 
 
 def buscarRimas(verbete: str) -> str:
-    pass
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando("rimas")
+
+    pagina, tree, sugestao = buscar(verbete)
+
+    if pagina is None:
+        return quatroZeroQuatro(verbete, sugestao)
+
+    if tree is None:
+        return ''
+
+    resultado = ''
+    for each in tree.xpath('//*[@class="tit-other"]/text()'):
+        if 'Rimas' in each:
+            resultado = each.split(' ')
+    if len(resultado) == 0:
+        return f"_O verbete_ *{verbete}* _não tem rimas disponíveis._{fonte(pagina)}"
+
+    resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
+    elemento = tree.xpath(
+        '//div[@class="wrap-section"]/ul[contains(@class, "list")]/li//text()'
+    )
+    if len(elemento) > 1:
+        resultado += f"{', '.join(elemento[:-1])} e "
+    resultado += elemento[-1]
+
+    return f"{resultado}{fonte(pagina)}"
 
 
 def buscarAnagramas(verbete: str) -> str:
@@ -219,9 +246,8 @@ def palavra(conteudo: str) -> str:
 def erroPalavraFaltando(comando: str) -> str:
     return "\n".join([
         "Você precisa informar uma palavra junto com o comando.",
-        "", "Exemplos:",
-        f"/definir palavra",
-        f"/sinonimos palavra",
+        "", "Exemplo:",
+        f"/{comando} palavra",
     ])
 
 
@@ -247,7 +273,7 @@ def ajuda() -> str:
         "/antonimos ou /a - *antônimos* de um _verbete_",
         # "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
         # "/conjugar ou /c - *conjugar* um _verbo_",
-        # "/rimas ou /r - *rimas* de um _verbete_",
+        "/rimas ou /r - *rimas* de um _verbete_",
         # "/anagramas ou /ana - *anagramas* de um _verbete_",
         # "/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_",
         "/dia - *Palavra do dia*."
