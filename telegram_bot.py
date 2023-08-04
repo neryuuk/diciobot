@@ -230,7 +230,7 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     words = update.message.text.split(',')
     for word in words:
         await update.message.reply_markdown(
-            buscarDefinicao(word.strip().lower()),
+            buscarDefinicao(f"/d {word.strip().lower()}"),
             disable_web_page_preview=True
         )
 
