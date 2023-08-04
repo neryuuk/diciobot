@@ -57,19 +57,7 @@ def buscar(verbete: str, comando) -> str:
         return quatroZeroQuatro(verbete, '')
 
 
-def buscarDefinicao(verbete: str) -> str:
-    verbete = palavra(verbete)
-    if not verbete:
-        return erroPalavraFaltando("definir")
-
-    pagina, tree, sugestao = buscar(verbete)
-
-    if pagina is None:
-        return quatroZeroQuatro(verbete, sugestao)
-
-    if tree is None:
-        return ''
-
+def definir(verbete, tree) -> str:
     definicao = blocoDefinicao(tree)
     significado = blocoSignificado(tree)
 
@@ -77,9 +65,9 @@ def buscarDefinicao(verbete: str) -> str:
         return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
     elif len(significado) == 0:
         definicao += "Significado: Não encontrado."
-        return definicao + fonte(pagina)
+        return definicao
 
-    return f"{definicao}{significado}{fonte(pagina)}".replace("[", "\[")
+    return f"{definicao}{significado}".replace("[", "\[")
 
 
 def blocoDefinicao(tree) -> str:
@@ -134,8 +122,7 @@ def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
     if len(sugestao) == 0:
         return naoEncontrado
 
-    naoEncontrado += "\n\n_Você quis dizer_ *{}*?".format(sugestao)
-    return naoEncontrado
+    return f"{naoEncontrado}\n\n_Você quis dizer_ *{sugestao}*?"
 
 
 def buscarPalavraDoDia() -> str:
