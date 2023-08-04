@@ -165,12 +165,12 @@ def antonimos(verbete: str, tree) -> str:
     return buscarSinonimosAntonimos(verbete, tree, "Antônimos")
 
 
-def buscarExemplos(verbete: str) -> str:
-    pass
+def exemplos(verbete: str) -> str:
+    return manutencao()
 
 
-def buscarConjugacao(verbete: str) -> str:
-    pass
+def conjugar(verbete: str) -> str:
+    return manutencao()
 
 
 def rimasAnagramas(verbete: str, tree, tipo: str = 'Rimas') -> str:
@@ -200,8 +200,8 @@ def anagramas(verbete: str, tree) -> str:
     return rimasAnagramas(verbete, tree, 'Anagramas')
 
 
-def buscarTudo(verbete: str) -> str:
-    pass
+def tudo(verbete: str = '') -> str:
+    return manutencao()
 
 
 def palavra(conteudo: str) -> str:
