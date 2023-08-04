@@ -211,7 +211,10 @@ async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(dicio.manutencao())
+    await update.message.reply_markdown(
+        dicio.buscar(update.message.text, dicio.anagramas),
+        disable_web_page_preview=True
+    )
 
 
 async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
