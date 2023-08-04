@@ -184,7 +184,10 @@ async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(dicio.manutencao())
+    await update.message.reply_markdown(
+        dicio.buscar(update.message.text, dicio.exemplos),
+        disable_web_page_preview=True
+    )
 
 
 async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -192,7 +195,10 @@ async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(dicio.manutencao())
+    await update.message.reply_markdown(
+        dicio.buscar(update.message.text, dicio.conjugar),
+        disable_web_page_preview=True
+    )
 
 
 async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
