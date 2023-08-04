@@ -196,10 +196,6 @@ def rimas(verbete: str, tree) -> str:
     return rimasAnagramas(verbete, tree, 'Rimas')
 
 
-def buscarAnagramas(verbete: str) -> str:
-    pass
-
-
 def anagramas(verbete: str, tree) -> str:
     return rimasAnagramas(verbete, tree, 'Anagramas')
 
