@@ -165,37 +165,43 @@ def antonimos(verbete: str, tree) -> str:
     return buscarSinonimosAntonimos(verbete, tree, "Antônimos")
 
 
-def buscarExemplos(verbete: str) -> str:
-    pass
+def exemplos(verbete: str) -> str:
+    return manutencao()
 
 
-def buscarConjugacao(verbete: str) -> str:
-    pass
+def conjugar(verbete: str) -> str:
+    return manutencao()
 
 
-def rimas(verbete: str, tree) -> str:
+def rimasAnagramas(verbete: str, tree, tipo: str = 'Rimas') -> str:
     resultado = ''
-    for each in tree.xpath('//*[@class="tit-other"]/text()'):
-        if 'Rimas' in each:
+    indice = None
+    for i, each in enumerate(tree.xpath('//h3[@class="tit-other"]/text()')):
+        if tipo in each:
             resultado = each.split(' ')
+            indice = i
+
     if len(resultado) == 0:
-        return f"_O verbete_ *{verbete}* _não tem rimas disponíveis._"
+        return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
 
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
     elemento = tree.xpath(
-        '//div[@class="wrap-section"]/ul[contains(@class, "list")]/li//text()'
-    )
+        '//div[@class="wrap-section"]/h3[@class="tit-other"]/..')[indice].xpath('./ul/li//text()')
     if len(elemento) > 1:
         resultado += f"{', '.join(elemento[:-1])} e "
     return resultado + elemento[-1]
 
 
-def buscarAnagramas(verbete: str) -> str:
-    pass
+def rimas(verbete: str, tree) -> str:
+    return rimasAnagramas(verbete, tree, 'Rimas')
 
 
-def buscarTudo(verbete: str) -> str:
-    pass
+def anagramas(verbete: str, tree) -> str:
+    return rimasAnagramas(verbete, tree, 'Anagramas')
+
+
+def tudo(verbete: str = '') -> str:
+    return manutencao()
 
 
 def palavra(conteudo: str) -> str:
@@ -238,7 +244,7 @@ def ajuda() -> str:
         # "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
         # "/conjugar ou /c - *conjugar* um _verbo_",
         "/rimas ou /r - *rimas* de um _verbete_",
-        # "/anagramas ou /ana - *anagramas* de um _verbete_",
+        "/anagramas ou /ana - *anagramas* de um _verbete_",
         # "/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_",
         "/dia - *Palavra do dia*."
     ])
