@@ -6,10 +6,10 @@ O diciobot consulta o [Dicio - Dicionário Online de Português],
 composto por definições, significados, exemplos e rimas
 que caracterizam mais de 400.000 palavras e verbetes.
 """
+import dicio
 import logging
-from dicio import *
-from os import getenv
 from dotenv import load_dotenv
+from os import getenv
 from telegram import Update, __version__ as TG_VER
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 load_dotenv()
@@ -115,9 +115,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    reply = f"Bem vindo ao @diciobot!\nVamos começar?\n\n{ajuda()}"
+    reply = f"Bem vindo ao @diciobot!\nVamos começar?\n\n{dicio.ajuda()}"
     if update.message.chat.type == update.message.chat.PRIVATE:
-        reply += f"\n\n{dica()}"
+        reply += f"\n\n{dicio.dica()}"
 
     await update.message.reply_markdown(reply)
 
@@ -128,11 +128,11 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    reply = ajuda()
+    reply = dicio.ajuda()
     if isPrivate(update):
-        reply += f"\n\n{dica()}"
+        reply += f"\n\n{dicio.dica()}"
 
-    await update.message.reply_markdown(ajuda())
+    await update.message.reply_markdown(dicio.ajuda())
 
 
 async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -141,7 +141,7 @@ async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        buscarPalavraDoDia(),
+        dicio.dia(),
         disable_web_page_preview=True
     )
 
@@ -152,7 +152,7 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        buscarDefinicao(update.message.text),
+        dicio.buscar(update.message.text, dicio.definir),
         disable_web_page_preview=True
     )
 
@@ -163,7 +163,7 @@ async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        buscarSinonimos(update.message.text),
+        dicio.buscar(update.message.text, dicio.sinonimos),
         disable_web_page_preview=True
     )
 
@@ -174,7 +174,7 @@ async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        buscarAntonimos(update.message.text),
+        dicio.buscar(update.message.text, dicio.antonimos),
         disable_web_page_preview=True
     )
 
@@ -184,7 +184,7 @@ async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(manutencao())
+    await update.message.reply_markdown(dicio.manutencao())
 
 
 async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -192,7 +192,7 @@ async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(manutencao())
+    await update.message.reply_markdown(dicio.manutencao())
 
 
 async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -201,7 +201,7 @@ async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        buscarRimas(update.message.text),
+        dicio.buscar(update.message.text, dicio.rimas),
         disable_web_page_preview=True
     )
 
@@ -211,7 +211,7 @@ async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(manutencao())
+    await update.message.reply_markdown(dicio.manutencao())
 
 
 async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -219,7 +219,7 @@ async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(manutencao())
+    await update.message.reply_markdown(dicio.manutencao())
 
 
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -232,8 +232,11 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logHandler(update)
     words = update.message.text.split(',')
     for word in words:
+        if not word or word.strip():
+            continue
+
         await update.message.reply_markdown(
-            buscarDefinicao(f"/d {word.strip().lower()}"),
+            dicio.buscar(f"/d {word.strip().lower()}", dicio.definir),
             disable_web_page_preview=True
         )
 
@@ -266,7 +269,8 @@ def main() -> None:
 
         # Fallback handler
         app.add_handler(MessageHandler(
-            filters.TEXT & ~filters.COMMAND, fallback))
+            filters.TEXT & ~filters.COMMAND, fallback
+        ))
 
         # Run the bot until the user presses Ctrl-C
         app.run_polling(allowed_updates=Update.ALL_TYPES)
