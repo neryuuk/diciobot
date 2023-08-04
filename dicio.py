@@ -16,21 +16,28 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str) -> (any, any, str):
+def buscar(verbete: str, comando) -> str:
+    verbete = palavra(verbete)
+    if not verbete:
+        return erroPalavraFaltando(comando)
+
     try:
         busca = request.urlopen(buildEndpoint(verbete, True))
     except requests.exceptions.TooManyRedirects:
         pass
 
     tree = html.fromstring(str(busca.read(), "utf-8"))
+    if tree is None:
+        return ''
+
     if "/pesquisa.php" not in busca.url:
-        return busca, tree, ""
+        return f"{comando(verbete, tree)}{fonte(busca.url)}"
 
     # Retornou uma página de busca
     pagina = tree.xpath('//ul[@class="resultados"]/li/a[@class="_sugg"]')
     if len(pagina) == 0:
         # Não tem nenhuma sugestao para o verbete nao encontrado
-        return None, None, ""
+        return ''
 
     # Encontrou resultados pra busca do verbete
     for each in pagina:
@@ -39,30 +46,18 @@ def buscar(verbete: str) -> (any, any, str):
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = html.fromstring(str(busca.read(), "utf-8"))
-            return busca, tree, ""
+            return f"{comando(verbete, tree)}{fonte(busca.url)}"
 
     try:
         sugestao = pagina[0].xpath('span[@class="list-link"]/text()')[0]
 
         # Não encontrou o verbete solicitado nos resultados
-        return None, None, sugestao.strip()
+        return quatroZeroQuatro(verbete, sugestao.strip())
     except:
-        return None, None, ""
+        return quatroZeroQuatro(verbete, '')
 
 
-def buscarDefinicao(verbete: str) -> str:
-    verbete = palavra(verbete)
-    if not verbete:
-        return erroPalavraFaltando("definir")
-
-    pagina, tree, sugestao = buscar(verbete)
-
-    if pagina is None:
-        return quatroZeroQuatro(verbete, sugestao)
-
-    if tree is None:
-        return ''
-
+def definir(verbete, tree) -> str:
     definicao = blocoDefinicao(tree)
     significado = blocoSignificado(tree)
 
@@ -70,9 +65,9 @@ def buscarDefinicao(verbete: str) -> str:
         return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
     elif len(significado) == 0:
         definicao += "Significado: Não encontrado."
-        return definicao + fonte(pagina)
+        return definicao
 
-    return f"{definicao}{significado}{fonte(pagina)}".replace("[", "\[")
+    return f"{definicao}{significado}".replace("[", "\[")
 
 
 def blocoDefinicao(tree) -> str:
@@ -127,30 +122,17 @@ def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
     if len(sugestao) == 0:
         return naoEncontrado
 
-    naoEncontrado += "\n\n_Você quis dizer_ *{}*?".format(sugestao)
-    return naoEncontrado
+    return f"{naoEncontrado}\n\n_Você quis dizer_ *{sugestao}*?"
 
 
-def buscarPalavraDoDia() -> str:
+def dia() -> str:
     pagina = request.urlopen(buildEndpoint())
     tree = html.fromstring(str(pagina.read(), "utf-8"))
     doDia = tree.xpath("//*[@class='word-link']/text()")[0]
-    return f"*Palavra do dia:* _{doDia}_\n\n{buscarDefinicao(f'/dia {doDia}')}"
+    return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)}"
 
 
-def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
-    verbete = palavra(verbete)
-    if not verbete:
-        return erroPalavraFaltando(tipo.lower().replace("ô", "o"))
-
-    pagina, tree, sugestao = buscar(verbete)
-
-    if pagina is None:
-        return quatroZeroQuatro(verbete, sugestao)
-
-    if tree is None:
-        return ''
-
+def buscarSinonimosAntonimos(verbete: str, tree, tipo: str = 'Sinônimos') -> str:
     titulos = tree.xpath(
         '//h2[contains(@class, "subtitle-significado")]//text()'
     )
@@ -163,7 +145,7 @@ def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
             indice = i
 
     if len(resultado) == 0:
-        return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._{fonte(pagina)}"
+        return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
 
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n"
 
@@ -172,17 +154,15 @@ def buscarSinonimosAntonimos(verbete: str, tipo: str = 'Sinônimos') -> str:
 
     if len(lista) > 1:
         resultado += ', '.join(lista[:-1]) + ' e '
-    resultado += lista[-1]
-
-    return f"{resultado}{fonte(pagina)}"
+    return resultado + lista[-1]
 
 
-def buscarSinonimos(verbete: str) -> str:
-    return buscarSinonimosAntonimos(verbete, "Sinônimos")
+def sinonimos(verbete: str, tree) -> str:
+    return buscarSinonimosAntonimos(verbete, tree, "Sinônimos")
 
 
-def buscarAntonimos(verbete: str) -> str:
-    return buscarSinonimosAntonimos(verbete, "Antônimos")
+def antonimos(verbete: str, tree) -> str:
+    return buscarSinonimosAntonimos(verbete, tree, "Antônimos")
 
 
 def buscarExemplos(verbete: str) -> str:
@@ -193,25 +173,13 @@ def buscarConjugacao(verbete: str) -> str:
     pass
 
 
-def buscarRimas(verbete: str) -> str:
-    verbete = palavra(verbete)
-    if not verbete:
-        return erroPalavraFaltando("rimas")
-
-    pagina, tree, sugestao = buscar(verbete)
-
-    if pagina is None:
-        return quatroZeroQuatro(verbete, sugestao)
-
-    if tree is None:
-        return ''
-
+def rimas(verbete: str, tree) -> str:
     resultado = ''
     for each in tree.xpath('//*[@class="tit-other"]/text()'):
         if 'Rimas' in each:
             resultado = each.split(' ')
     if len(resultado) == 0:
-        return f"_O verbete_ *{verbete}* _não tem rimas disponíveis._{fonte(pagina)}"
+        return f"_O verbete_ *{verbete}* _não tem rimas disponíveis._"
 
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
     elemento = tree.xpath(
@@ -219,9 +187,7 @@ def buscarRimas(verbete: str) -> str:
     )
     if len(elemento) > 1:
         resultado += f"{', '.join(elemento[:-1])} e "
-    resultado += elemento[-1]
-
-    return f"{resultado}{fonte(pagina)}"
+    return resultado + elemento[-1]
 
 
 def buscarAnagramas(verbete: str) -> str:
@@ -243,11 +209,11 @@ def palavra(conteudo: str) -> str:
     return conteudo[-1]
 
 
-def erroPalavraFaltando(comando: str) -> str:
+def erroPalavraFaltando(comando) -> str:
     return "\n".join([
         "Você precisa informar uma palavra junto com o comando.",
         "", "Exemplo:",
-        f"/{comando} palavra",
+        f"/{comando.__name__} palavra",
     ])
 
 
@@ -258,10 +224,8 @@ def manutencao() -> str:
 def fonte(pagina) -> str:
     if not pagina:
         return ''
-    if not pagina.url:
-        return ''
 
-    return "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
+    return f"\n\n*Fonte:* {pagina}"
 
 
 def ajuda() -> str:
