@@ -173,21 +173,27 @@ def buscarConjugacao(verbete: str) -> str:
     pass
 
 
-def rimas(verbete: str, tree) -> str:
+def rimasAnagramas(verbete: str, tree, tipo: str = 'Rimas') -> str:
     resultado = ''
-    for each in tree.xpath('//*[@class="tit-other"]/text()'):
-        if 'Rimas' in each:
+    indice = None
+    for i, each in enumerate(tree.xpath('//h3[@class="tit-other"]/text()')):
+        if tipo in each:
             resultado = each.split(' ')
+            indice = i
+
     if len(resultado) == 0:
-        return f"_O verbete_ *{verbete}* _não tem rimas disponíveis._"
+        return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
 
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
     elemento = tree.xpath(
-        '//div[@class="wrap-section"]/ul[contains(@class, "list")]/li//text()'
-    )
+        '//div[@class="wrap-section"]/h3[@class="tit-other"]/..')[indice].xpath('./ul/li//text()')
     if len(elemento) > 1:
         resultado += f"{', '.join(elemento[:-1])} e "
     return resultado + elemento[-1]
+
+
+def rimas(verbete: str, tree) -> str:
+    return rimasAnagramas(verbete, tree, 'Rimas')
 
 
 def buscarAnagramas(verbete: str) -> str:
