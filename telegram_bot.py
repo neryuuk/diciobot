@@ -232,7 +232,7 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logHandler(update)
     words = update.message.text.split(',')
     for word in words:
-        if not word or word.strip():
+        if not word or not word.strip():
             continue
 
         await update.message.reply_markdown(
