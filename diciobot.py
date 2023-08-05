@@ -7,7 +7,6 @@ class Diciobot():
         tudo.append(self.definir(verbete))
         if "_não foi encontrado._" in tudo[0]:
             return tudo
-        tudo.append(self.exemplos(verbete))
         tudo.append(self.conjugar(verbete))
         remover = []
         for i in range(len(tudo)):
@@ -16,63 +15,6 @@ class Diciobot():
         for each in remover:
             tudo.pop(each)
         return tudo
-
-    def exemplos(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete
-        naoDisponivel += "* _não tem frases ou exemplos disponíveis._"
-        pagina, sugestao = self.buscar(verbete)
-        if pagina.status_code == 404:
-            return self.quatroZeroQuatro(verbete, sugestao)
-        fonte = "*Fonte:* " + pagina.url.replace("_", "\_")
-        tree = html.fromstring(pagina.text)
-        titulo_frases = tree.xpath('//*[@class="tit-frases"]/text()')
-        frases = ''
-        xpath = '//*[@class="frases"][1]/node()'
-        for each in titulo_frases:
-            if 'Frase' in each:
-                frases = each.split(' ')
-        if len(frases) != 0:
-            frases = '*' + ' '.join(frases[:-1]) + '* _' + frases[-1] + "_:\n"
-            elemento = tree.xpath(xpath)
-            xpath = '//*[@class="frases"][2]/node()'
-            elemento = elemento[1:]
-            for cada in elemento:
-                elem = cada.xpath('./span/node()')
-                for each in elem:
-                    if type(each) == html.HtmlElement:
-                        if each.tag == 'strong':
-                            frases += '*' + each.text + '*'
-                        elif each.tag == 'em':
-                            frases += "\n_" + each.text + "_\n"
-                    else:
-                        frases += each
-                frases += "\n"
-
-        titulo_exemplos = tree.xpath('//*[@class="tit-exemplo"]/text()')
-        exemplos = ''
-        for each in titulo_exemplos:
-            if 'Exemplo' in each:
-                exemplos = each.split(' ')
-        if len(exemplos) != 0:
-            exemplos = '*' + ' '.join(exemplos[:-1]) + '* _' + exemplos[-1]
-            exemplos += "_:\n"
-            elemento = tree.xpath(xpath)
-            for cada in elemento:
-                elem = cada.xpath('./node()')
-                for each in elem:
-                    if type(each) == html.HtmlElement:
-                        if each.tag == 'strong':
-                            exemplos += '*' + each.text + '*'
-                        elif each.tag == 'em':
-                            exemplos += "\n_" + each.text + "_\n"
-                    else:
-                        exemplos += each
-                exemplos += "\n"
-
-        if len(frases + exemplos) == 0:
-            return naoDisponivel + "\n\n" + fonte
-
-        return (frases + exemplos + fonte).replace("\n ", "\n")
 
     def conjugar(self, verbo):
         naoDisponivel = "_O verbete_ *" + verbo
