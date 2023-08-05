@@ -9,7 +9,6 @@ class Diciobot():
             return tudo
         tudo.append(self.exemplos(verbete))
         tudo.append(self.conjugar(verbete))
-        tudo.append(self.anagramas(verbete))
         remover = []
         for i in range(len(tudo)):
             if "* _não tem" in tudo[i]:
@@ -120,26 +119,3 @@ class Diciobot():
                         conjugacao += each.replace("*", "\*")
                 conjugacao += "\n"
         return conjugacao.replace("\n ", "\n") + fonte
-
-    def anagramas(self, verbete):
-        naoDisponivel = "_O verbete_ *" + verbete
-        naoDisponivel += "* _não tem anagramas disponíveis._"
-        pagina, sugestao = self.buscar(verbete)
-        if pagina.status_code == 404:
-            return self.quatroZeroQuatro(verbete, sugestao)
-        fonte = "\n\n*Fonte:* " + pagina.url.replace("_", "\_")
-        tree = html.fromstring(pagina.text)
-        titulos = tree.xpath('//*[@class="tit-other"]/text()')
-        anagramas = ''
-        for each in titulos:
-            if 'Anagramas' in each:
-                anagramas = each.split(' ')
-        if len(anagramas) == 0:
-            return naoDisponivel + fonte
-        anagramas = '*' + ' '.join(anagramas[:-1]) + '* _' + anagramas[-1]
-        anagramas += "_\n"
-        elemento = tree.xpath('//*[@class="list col-4 small"][2]/li/text()')
-        if len(elemento) > 1:
-            anagramas += '_' + ', '.join(elemento[:-1]) + '_ e '
-        anagramas += '_' + elemento[-1] + "_"
-        return anagramas + fonte
