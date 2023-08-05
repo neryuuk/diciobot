@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
 import requests
+from collections.abc import Callable
 from lxml import html
+from lxml.html import HtmlElement
 from urllib import request, parse
 
 
@@ -16,7 +18,7 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str, comando) -> str:
+def buscar(verbete: str, comando: Callable) -> str:
     verbete = palavra(verbete)
     if not verbete:
         return erroPalavraFaltando(comando)
@@ -57,7 +59,7 @@ def buscar(verbete: str, comando) -> str:
         return quatroZeroQuatro(verbete, '')
 
 
-def definir(verbete, tree) -> str:
+def definir(verbete: str, tree: HtmlElement) -> str:
     definicao = blocoDefinicao(tree)
     significado = blocoSignificado(tree)
 
@@ -70,7 +72,7 @@ def definir(verbete, tree) -> str:
     return f"{definicao}{significado}".replace("[", "\[")
 
 
-def blocoDefinicao(tree) -> str:
+def blocoDefinicao(tree: HtmlElement) -> str:
     titulo = ''
     for each in tree.xpath('//h2[@class="tit-section"]/text()'):
         titulo = each.split(' ')
@@ -89,7 +91,7 @@ def blocoDefinicao(tree) -> str:
     return f"{mensagem}\n\n".replace(" \n", "\n").replace("\n ", "\n")
 
 
-def blocoSignificado(tree) -> str:
+def blocoSignificado(tree: HtmlElement) -> str:
     titulos = tree.xpath('//h2[@class="tit-significado"]/text()')
     if len(titulos) == 0:
         return ""
@@ -99,7 +101,7 @@ def blocoSignificado(tree) -> str:
         titulo = each.split(' ')
     mensagem = f"*{' '.join(titulo[:-1])}* _{titulo[-1]}_\n"
     for each in tree.xpath('//p[@itemprop="description"]/span'):
-        if type(each) == html.HtmlElement:
+        if type(each) == HtmlElement:
             content = each.text_content().strip().replace("*", "\*")
             if "cl" in each.classes:
                 mensagem += f"{content}\n"
@@ -132,7 +134,7 @@ def dia() -> str:
     return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)}"
 
 
-def buscarSinonimosAntonimos(verbete: str, tree, tipo: str = 'Sinônimos') -> str:
+def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = 'Sinônimos') -> str:
     titulos = tree.xpath(
         '//h2[contains(@class, "subtitle-significado")]//text()'
     )
@@ -157,11 +159,11 @@ def buscarSinonimosAntonimos(verbete: str, tree, tipo: str = 'Sinônimos') -> st
     return resultado + lista[-1]
 
 
-def sinonimos(verbete: str, tree) -> str:
+def sinonimos(verbete: str, tree: HtmlElement) -> str:
     return buscarSinonimosAntonimos(verbete, tree, "Sinônimos")
 
 
-def antonimos(verbete: str, tree) -> str:
+def antonimos(verbete: str, tree: HtmlElement) -> str:
     return buscarSinonimosAntonimos(verbete, tree, "Antônimos")
 
 
@@ -173,7 +175,7 @@ def conjugar(verbete: str) -> str:
     return manutencao()
 
 
-def rimasAnagramas(verbete: str, tree, tipo: str = 'Rimas') -> str:
+def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = 'Rimas') -> str:
     resultado = ''
     indice = None
     for i, each in enumerate(tree.xpath('//h3[@class="tit-other"]/text()')):
@@ -192,15 +194,15 @@ def rimasAnagramas(verbete: str, tree, tipo: str = 'Rimas') -> str:
     return resultado + elemento[-1]
 
 
-def rimas(verbete: str, tree) -> str:
+def rimas(verbete: str, tree: HtmlElement) -> str:
     return rimasAnagramas(verbete, tree, 'Rimas')
 
 
-def anagramas(verbete: str, tree) -> str:
+def anagramas(verbete: str, tree: HtmlElement) -> str:
     return rimasAnagramas(verbete, tree, 'Anagramas')
 
 
-def tudo(verbete: str = '') -> str:
+def tudo(verbete: str, tree: HtmlElement) -> str:
     return manutencao()
 
 
@@ -215,7 +217,7 @@ def palavra(conteudo: str) -> str:
     return conteudo[-1]
 
 
-def erroPalavraFaltando(comando) -> str:
+def erroPalavraFaltando(comando: Callable) -> str:
     return "\n".join([
         "Você precisa informar uma palavra junto com o comando.",
         "", "Exemplo:",
