@@ -167,8 +167,63 @@ def antonimos(verbete: str, tree: HtmlElement) -> str:
     return buscarSinonimosAntonimos(verbete, tree, "Antônimos")
 
 
-def exemplos(verbete: str) -> str:
-    return manutencao()
+def exemplos(verbete: str, tree: HtmlElement) -> str:
+    frases = blocoFrases(tree)
+    exemplos = blocoExemplos(tree)
+
+    if len(frases + exemplos) == 0:
+        return f"_O verbete_ *{verbete}* _não tem frases ou exemplos disponíveis._"
+
+    return f"{frases}{exemplos}".replace("\n ", "\n").replace(" \n", "\n")
+
+
+def blocoFrases(tree: HtmlElement) -> str:
+    resultado = ''
+    for each in tree.xpath('//*[@class="tit-frases"]/text()'):
+        if 'Frase' in each:
+            resultado = each.split(' ')
+    if len(resultado) != 0:
+        resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
+        elemento = tree.xpath('//*[@class="frases"][1]/node()')
+        elemento = elemento[1:]
+        for cada in elemento:
+            if type(cada) != HtmlElement:
+                continue
+            elem = cada.xpath('./span/node()')
+            for each in elem:
+                if type(each) == HtmlElement:
+                    if each.tag == 'strong':
+                        resultado += '*' + each.text + '*'
+                    elif each.tag == 'em':
+                        resultado += "\n_" + each.text + "_\n"
+                else:
+                    resultado += each
+            resultado += "\n"
+
+    return resultado
+
+
+def blocoExemplos(tree: HtmlElement) -> str:
+    resultado = ''
+    for each in tree.xpath('//*[@class="tit-exemplo"]/text()'):
+        if 'Exemplo' in each:
+            resultado = each.split(' ')
+    if len(resultado) != 0:
+        resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
+        elemento = tree.xpath('//*[@class="frases"][2]/node()')
+        for cada in elemento:
+            elem = cada.xpath('./node()')
+            for each in elem:
+                if type(each) == HtmlElement:
+                    if each.tag == 'strong':
+                        resultado += '*' + each.text + '*'
+                    elif each.tag == 'em':
+                        resultado += "\n_" + each.text + "_\n"
+                else:
+                    resultado += each
+            resultado += "\n"
+
+    return resultado
 
 
 def conjugar(verbete: str) -> str:
