@@ -256,36 +256,26 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 def main() -> None:
-    """Start the bot."""
+    app = Application.builder().token(getenv('TELEGRAM_TOKEN')).build()
 
-    try:
-        # Create the app and pass the bot's token.
-        app = Application.builder().token(getenv('TELEGRAM_TOKEN')).build()
+    app.add_handler(CommandHandler(["start"], start))
+    app.add_handler(CommandHandler(["ajuda", "help", "h"], help))
 
-        # Help Command handlers
-        app.add_handler(CommandHandler(["start"], start))
-        app.add_handler(CommandHandler(["ajuda", "help", "h"], help))
+    app.add_handler(CommandHandler(["dia", "hoje"], dia))
+    app.add_handler(CommandHandler(["definir", "d"], definir))
+    app.add_handler(CommandHandler(["sinonimos", "s"], sinonimos))
+    app.add_handler(CommandHandler(["antonimos", "a"], antonimos))
+    app.add_handler(CommandHandler(["exemplos", "e"], exemplos))
+    app.add_handler(CommandHandler(["conjugar", "c"], conjugar))
+    app.add_handler(CommandHandler(["rimas", "r"], rimas))
+    app.add_handler(CommandHandler(["anagramas", "ana"], anagramas))
+    app.add_handler(CommandHandler(["tudo", "t"], tudo))
 
-        # Function Command handlers
-        app.add_handler(CommandHandler(["dia", "hoje"], dia))
-        app.add_handler(CommandHandler(["definir", "d"], definir))
-        app.add_handler(CommandHandler(["sinonimos", "s"], sinonimos))
-        app.add_handler(CommandHandler(["antonimos", "a"], antonimos))
-        app.add_handler(CommandHandler(["exemplos", "e"], exemplos))
-        app.add_handler(CommandHandler(["conjugar", "c"], conjugar))
-        app.add_handler(CommandHandler(["rimas", "r"], rimas))
-        app.add_handler(CommandHandler(["anagramas", "ana"], anagramas))
-        app.add_handler(CommandHandler(["tudo", "t"], tudo))
+    app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND, fallback
+    ))
 
-        # Fallback handler
-        app.add_handler(MessageHandler(
-            filters.TEXT & ~filters.COMMAND, fallback
-        ))
-
-        # Run the bot until the user presses Ctrl-C
-        app.run_polling(allowed_updates=Update.ALL_TYPES)
-    except Exception as e:
-        print(e)
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
