@@ -34,14 +34,6 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 LOG_LEVEL = logging.INFO
 BOT_ID = getenv('TELEGRAM_BOT_ID')
 CHAT_ID = getenv('CHAT_ID')
-SHORT_CMD = ["h", "d", "s", "a", "e", "c", "r", "ana", "t"]
-LONG_CMD = [
-    "fallback", "start", "ajuda",
-    "help", "definir", "sinonimos",
-    "antonimos", "exemplos", "conjugar",
-    "rimas", "anagramas", "tudo",
-    "dia", "hoje"
-]
 CMD_DICT = {
     "fallback": "fallback",
     "start": "start",
