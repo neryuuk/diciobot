@@ -7,7 +7,10 @@ composto por definições, significados, exemplos e rimas
 que caracterizam mais de 400.000 palavras e verbetes.
 """
 import dicio
+import html
+import json
 import logging
+import traceback
 from dotenv import load_dotenv
 from os import getenv
 from telegram import Update, __version__ as TG_VER
@@ -28,6 +31,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
 
 LOG_LEVEL = logging.INFO
 BOT_ID = getenv('TELEGRAM_BOT_ID')
+CHAT_ID = getenv('CHAT_ID')
 SHORT_CMD = ["h", "d", "s", "a", "e", "c", "r", "ana", "t"]
 LONG_CMD = [
     "fallback", "start", "ajuda",
@@ -253,6 +257,35 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
 
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logging.getLogger(command(update)).error(
+        "Exception while handling an update",
+        # exc_info=context.error
+    )
+
+    tb_list = traceback.format_exception(
+        None,
+        context.error,
+        context.error.__traceback__
+    )
+    tb_string = "".join(tb_list)
+
+    update_str = update.to_dict() if isinstance(update, Update) else str(update)
+    message = (
+        f"An exception was raised while handling an update\n"
+        f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}</pre>\n\n"
+        f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
+        f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
+        f"<pre>{html.escape(tb_string)}</pre>"
+    )
+
+    await context.bot.send_message(
+        chat_id=CHAT_ID,
+        text=message,
+        parse_mode=ParseMode.HTML
+    )
+
+
 def main() -> None:
     app = Application.builder().token(getenv('TELEGRAM_TOKEN')).build()
 
@@ -272,6 +305,8 @@ def main() -> None:
     app.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND, fallback
     ))
+
+    app.add_error_handler(error_handler)
 
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
