@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
-import requests
 from collections.abc import Callable
-from lxml import html
-from lxml.html import HtmlElement
-from urllib import request, parse
+from lxml.html import fromstring, HtmlElement
+from requests.exceptions import TooManyRedirects
+from urllib import parse, request
 
 
 def buildEndpoint(verbete: str = None, pesquisa: bool = False):
@@ -25,10 +24,10 @@ def buscar(verbete: str, comando: Callable) -> str:
 
     try:
         busca = request.urlopen(buildEndpoint(verbete, True))
-    except requests.exceptions.TooManyRedirects:
+    except TooManyRedirects:
         pass
 
-    tree = html.fromstring(str(busca.read(), "utf-8"))
+    tree = fromstring(str(busca.read(), "utf-8"))
     if tree is None:
         return ''
 
@@ -47,7 +46,7 @@ def buscar(verbete: str, comando: Callable) -> str:
         # Encontrou o verbete solicitado nos resultados
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
-            tree = html.fromstring(str(busca.read(), "utf-8"))
+            tree = fromstring(str(busca.read(), "utf-8"))
             return f"{comando(verbete, tree)}{fonte(busca.url)}"
 
     try:
@@ -129,7 +128,7 @@ def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
 
 def dia() -> str:
     pagina = request.urlopen(buildEndpoint())
-    tree = html.fromstring(str(pagina.read(), "utf-8"))
+    tree = fromstring(str(pagina.read(), "utf-8"))
     doDia = tree.xpath("//*[@class='word-link']/text()")[0]
     return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)}"
 

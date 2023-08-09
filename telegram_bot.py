@@ -10,12 +10,14 @@ import dicio
 import html
 import json
 import logging
-import traceback
 from dotenv import load_dotenv
 from os import getenv
 from telegram import Update, __version__ as TG_VER
 from telegram.constants import ParseMode, ChatType
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler
+from telegram.ext.filters import COMMAND, TEXT
+from traceback import format_exception
+
 load_dotenv()
 
 try:
@@ -263,7 +265,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         # exc_info=context.error
     )
 
-    tb_list = traceback.format_exception(
+    tb_list = format_exception(
         None,
         context.error,
         context.error.__traceback__
@@ -291,7 +293,6 @@ def main() -> None:
 
     app.add_handler(CommandHandler(["start"], start))
     app.add_handler(CommandHandler(["ajuda", "help", "h"], help))
-
     app.add_handler(CommandHandler(["dia", "hoje"], dia))
     app.add_handler(CommandHandler(["definir", "d"], definir))
     app.add_handler(CommandHandler(["sinonimos", "s"], sinonimos))
@@ -302,10 +303,7 @@ def main() -> None:
     app.add_handler(CommandHandler(["anagramas", "ana"], anagramas))
     app.add_handler(CommandHandler(["tudo", "t"], tudo))
 
-    app.add_handler(MessageHandler(
-        filters.TEXT & ~filters.COMMAND, fallback
-    ))
-
+    app.add_handler(MessageHandler(TEXT & ~COMMAND, fallback))
     app.add_error_handler(error_handler)
 
     app.run_polling(allowed_updates=Update.ALL_TYPES)
