@@ -273,11 +273,12 @@ def palavra(conteudo: str) -> str:
 
 
 def erroPalavraFaltando(comando: Callable) -> str:
-    return "\n".join([
-        "Você precisa informar uma palavra junto com o comando.",
-        "", "Exemplo:",
-        f"/{comando.__name__} palavra",
-    ])
+    return (
+        f"Você precisa informar uma palavra junto com o comando.\n"
+        f"\n"
+        f"Exemplo:\n"
+        f"/{comando.__name__} palavra\n"
+    )
 
 
 def manutencao() -> str:
@@ -292,25 +293,25 @@ def fonte(pagina) -> str:
 
 
 def ajuda() -> str:
-    return "\n".join([
-        "As opções *disponíveis* são as _seguintes_:",
-        "",
-        "/definir ou /d - *definição* de um _verbete_",
-        "/sinonimos ou /s - *sinônimos* de um _verbete_",
-        "/antonimos ou /a - *antônimos* de um _verbete_",
-        # "/exemplos ou /e - *exemplos* de utilização de um _verbete_",
-        # "/conjugar ou /c - *conjugar* um _verbo_",
-        "/rimas ou /r - *rimas* de um _verbete_",
-        "/anagramas ou /ana - *anagramas* de um _verbete_",
-        # "/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_",
-        "/dia - *Palavra do dia*."
-    ])
+    return (
+        f"As opções *disponíveis* são as _seguintes_:\n"
+        f"\n"
+        f"/definir ou /d - *definição* de um _verbete_\n"
+        f"/sinonimos ou /s - *sinônimos* de um _verbete_\n"
+        f"/antonimos ou /a - *antônimos* de um _verbete_\n"
+        # f"/exemplos ou /e - *exemplos* de utilização de um _verbete_\n"
+        # f"/conjugar ou /c - *conjugar* um _verbo_\n"
+        f"/rimas ou /r - *rimas* de um _verbete_\n"
+        f"/anagramas ou /ana - *anagramas* de um _verbete_\n"
+        # f"/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_\n"
+        f"/dia - *Palavra do dia*."
+    )
 
 
 def dica() -> str:
-    return " ".join([
-        "*Dica*: Quando estiver falando *diretamente* com o bot,",
-        "você pode mandar diversas palavras separadas por",
-        "*vírgula* para obter suas definições.",
-        "(Sem precisar do comando /definir)\n",
-    ])
+    return (
+        f"*Dica*: Quando estiver falando *diretamente* com o bot, "
+        f"você pode mandar diversas palavras separadas por "
+        f"*vírgula* para obter suas definições. "
+        f"(Sem precisar do comando /definir)\n"
+    )
