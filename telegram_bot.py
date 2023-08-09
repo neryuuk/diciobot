@@ -11,6 +11,7 @@ import logging
 from dotenv import load_dotenv
 from os import getenv
 from telegram import Update, __version__ as TG_VER
+from telegram.constants import ParseMode, ChatType
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 load_dotenv()
 
@@ -79,6 +80,10 @@ def isValid(update: Update):
     return True
 
 
+def isPrivate(update: Update) -> bool:
+    return update.message.chat.type == ChatType.PRIVATE
+
+
 def command(update: Update) -> str:
     cmd = 'fallback'
 
@@ -96,7 +101,7 @@ def logHandler(update: Update) -> None:
     if not isValid(update):
         return
     identity = [str(update.message.chat.type)]
-    if update.message.chat.type != update.message.chat.PRIVATE:
+    if not isPrivate(update):
         identity.append(str(update.message.chat.id))
     identity.append(str(update.message.from_user.id))
     identity.append(str(update.message.from_user.username))
@@ -116,7 +121,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     reply = f"Bem vindo ao @diciobot!\nVamos começar?\n\n{dicio.ajuda()}"
-    if update.message.chat.type == update.message.chat.PRIVATE:
+    if isPrivate(update):
         reply += f"\n\n{dicio.dica()}"
 
     await update.message.reply_markdown(reply)
@@ -248,10 +253,6 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             dicio.buscar(f"/d {word.strip().lower()}", dicio.definir),
             disable_web_page_preview=True
         )
-
-
-def isPrivate(update: Update) -> bool:
-    return update.message.chat.type == update.message.chat.PRIVATE
 
 
 def main() -> None:
