@@ -70,7 +70,7 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
-def isValid(update: Update):
+def isValid(update: Update) -> bool:
     if not update:
         return False
     if not update.message:
@@ -87,7 +87,7 @@ def isPrivate(update: Update) -> bool:
 def command(update: Update) -> str:
     cmd = 'fallback'
 
-    if update.message.text.startswith("/"):
+    if isValid(update) and update.message.text.startswith("/"):
         split = BOT_ID if BOT_ID in update.message.text else " "
         [cmd, *_] = update.message.text.lower().replace("/", "").split(split, 1)
 
