@@ -173,7 +173,7 @@ def exemplos(verbete: str, tree: HtmlElement) -> str:
     if len(frases + exemplos) == 0:
         return f"_O verbete_ *{verbete}* _não tem frases ou exemplos disponíveis._"
 
-    return f"{frases}{exemplos}".replace("\n ", "\n").replace(" \n", "\n")
+    return f"{frases}\n\n{exemplos}".strip().replace("\n ", "\n").replace(" \n", "\n")
 
 
 def blocoFrases(tree: HtmlElement) -> str:
