@@ -5,6 +5,7 @@ from collections.abc import Callable
 from lxml.html import fromstring, HtmlElement
 from requests.exceptions import TooManyRedirects
 from urllib import parse, request
+import re
 
 
 def buildEndpoint(verbete: str = None, pesquisa: bool = False):
@@ -167,8 +168,8 @@ def antonimos(verbete: str, tree: HtmlElement) -> str:
 
 
 def exemplos(verbete: str, tree: HtmlElement) -> str:
-    frases = blocoFrases(tree)
-    exemplos = blocoExemplos(tree)
+    frases = blocoFrasesExemplos(tree)
+    exemplos = blocoFrasesExemplos(tree, "exemplo")
 
     if len(frases + exemplos) == 0:
         return f"_O verbete_ *{verbete}* _não tem frases ou exemplos disponíveis._"
@@ -176,33 +177,11 @@ def exemplos(verbete: str, tree: HtmlElement) -> str:
     return f"{frases}\n\n{exemplos}".strip().replace("\n ", "\n").replace(" \n", "\n")
 
 
-def blocoFrases(tree: HtmlElement) -> str:
+def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
+    TIPO = {"frases": "Frases ", "exemplo": "Exemplos "}
     div = None
-    for each in tree.xpath('//h3[@class="tit-frases"]'):
-        if 'Frases ' in each.text_content():
-            div = each
-
-    if div is None:
-        return ''
-
-    resultado = div.text_content().split(' ')
-    resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
-    for each in div.getparent().xpath('node()/div[@class="frase"]/span/node()'):
-        if type(each) == HtmlElement:
-            if each.tag == 'strong':
-                resultado += '*' + each.text + '*'
-            elif each.tag == 'em':
-                resultado += "_" + each.text + "_\n\n"
-        elif each.strip():
-            resultado += each.strip() + "\n"
-
-    return resultado.strip()
-
-
-def blocoExemplos(tree: HtmlElement) -> str:
-    div = None
-    for each in tree.xpath('//h3[@class="tit-exemplo"]'):
-        if 'Exemplos ' in each.text_content():
+    for each in tree.xpath(f"//h3[@class='tit-{tipo}']"):
+        if TIPO[tipo] in each.text_content():
             div = each
 
     if div is None:
@@ -211,8 +190,8 @@ def blocoExemplos(tree: HtmlElement) -> str:
     resultado = div.text_content().split(' ')
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
     for each in div.getparent().xpath('node()/div[@class="frase"]'):
-        text = each.text_content().strip()
-        fonte = each.xpath('./em/text()')
+        text = re.sub(r"\s{2,}", r" ", each.text_content().strip())
+        fonte = each.xpath('.//em/text()')
         if len(fonte) > 0:
             text = text.replace(f"{fonte[0]}", f"\n_{fonte[0]}_")
 
