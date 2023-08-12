@@ -177,29 +177,26 @@ def exemplos(verbete: str, tree: HtmlElement) -> str:
 
 
 def blocoFrases(tree: HtmlElement) -> str:
-    resultado = ''
-    for each in tree.xpath('//*[@class="tit-frases"]/text()'):
-        if 'Frase' in each:
-            resultado = each.split(' ')
-    if len(resultado) != 0:
-        resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
-        elemento = tree.xpath('//*[@class="frases"][1]/node()')
-        elemento = elemento[1:]
-        for cada in elemento:
-            if type(cada) != HtmlElement:
-                continue
-            elem = cada.xpath('./span/node()')
-            for each in elem:
-                if type(each) == HtmlElement:
-                    if each.tag == 'strong':
-                        resultado += '*' + each.text + '*'
-                    elif each.tag == 'em':
-                        resultado += "\n_" + each.text + "_\n"
-                else:
-                    resultado += each
-            resultado += "\n"
+    div = None
+    for each in tree.xpath('//h3[@class="tit-frases"]'):
+        if 'Frases ' in each.text_content():
+            div = each
 
-    return resultado
+    if div is None:
+        return ''
+
+    resultado = div.text_content().split(' ')
+    resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
+    for each in div.getparent().xpath('node()/div[@class="frase"]/span/node()'):
+        if type(each) == HtmlElement:
+            if each.tag == 'strong':
+                resultado += '*' + each.text + '*'
+            elif each.tag == 'em':
+                resultado += "_" + each.text + "_\n\n"
+        elif each.strip():
+            resultado += each.strip() + "\n"
+
+    return resultado.strip()
 
 
 def blocoExemplos(tree: HtmlElement) -> str:
