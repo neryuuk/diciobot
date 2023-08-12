@@ -33,7 +33,8 @@ def buscar(verbete: str, comando: Callable) -> str:
         return ""
 
     if "/pesquisa.php" not in busca.url:
-        return f"{comando(verbete, tree)}{fonte(busca.url)}"
+        resultado = re.sub(r" *\n *", r"\n", comando(verbete, tree))
+        return f"{resultado}{fonte(busca.url)}"
 
     # Retornou uma página de busca
     pagina = tree.xpath("//ul[@class='resultados']/li/a[@class='_sugg']")
@@ -48,7 +49,8 @@ def buscar(verbete: str, comando: Callable) -> str:
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = fromstring(str(busca.read(), "utf-8"))
-            return f"{comando(verbete, tree)}{fonte(busca.url)}"
+            resultado = re.sub(r" *\n *", r"\n", comando(verbete, tree))
+            return f"{resultado}{fonte(busca.url)}"
 
     try:
         sugestao = pagina[0].xpath("span[@class='list-link']/text()")[0]
@@ -88,7 +90,7 @@ def blocoDefinicao(tree: HtmlElement) -> str:
         if len(each.strip()) > 0:
             mensagem += f"{each.strip()} "
 
-    return f"{mensagem}\n\n".replace(" \n", "\n").replace("\n ", "\n")
+    return f"{mensagem}\n\n"
 
 
 def blocoSignificado(tree: HtmlElement) -> str:
@@ -112,7 +114,7 @@ def blocoSignificado(tree: HtmlElement) -> str:
         else:
             mensagem += f"{each.strip()}\n"
 
-    return f"{mensagem}".replace(" \n", "\n").replace("\n ", "\n")
+    return f"{mensagem}"
 
 
 def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
@@ -170,7 +172,7 @@ def exemplos(verbete: str, tree: HtmlElement) -> str:
     if len(frases + exemplos) == 0:
         return f"_O verbete_ *{verbete}* _não tem frases ou exemplos disponíveis._"
 
-    return f"{frases}\n\n{exemplos}".strip().replace("\n ", "\n").replace(" \n", "\n")
+    return f"{frases}\n\n{exemplos}".strip()
 
 
 def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
