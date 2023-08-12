@@ -135,13 +135,9 @@ def dia() -> str:
 
 
 def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinônimos") -> str:
-    titulos = tree.xpath(
-        "//h2[contains(@class, 'subtitle-significado')]//text()"
-    )
-
     resultado = ""
     indice = None
-    for i, each in enumerate(titulos):
+    for i, each in enumerate(tree.xpath("//h2[contains(@class, 'subtitle-significado')]//text()")):
         if tipo in each:
             resultado = each.split(" ")
             indice = i
@@ -155,7 +151,7 @@ def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinô
     lista = blocos.xpath("a//text()")
 
     if len(lista) > 1:
-        resultado += ', '.join(lista[:-1]) + ' e '
+        resultado += f"{', '.join(lista[:-1])} e "
     return resultado + lista[-1]
 
 
