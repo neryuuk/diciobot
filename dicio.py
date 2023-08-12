@@ -289,7 +289,7 @@ def ajuda() -> str:
         f"/definir ou /d - *definição* de um _verbete_\n"
         f"/sinonimos ou /s - *sinônimos* de um _verbete_\n"
         f"/antonimos ou /a - *antônimos* de um _verbete_\n"
-        # f"/exemplos ou /e - *exemplos* de utilização de um _verbete_\n"
+        f"/exemplos ou /e - *exemplos* de utilização de um _verbete_\n"
         # f"/conjugar ou /c - *conjugar* um _verbo_\n"
         f"/rimas ou /r - *rimas* de um _verbete_\n"
         f"/anagramas ou /ana - *anagramas* de um _verbete_\n"
