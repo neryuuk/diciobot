@@ -117,11 +117,8 @@ def blocoSignificado(tree: HtmlElement) -> str:
     return f"{mensagem}"
 
 
-def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
-    naoEncontrado = "_O {}_ *{}* _não foi encontrado._".format(
-        "verbo" if verbo else "verbete",
-        verbete
-    )
+def quatroZeroQuatro(verbete: str, sugestao: str) -> str:
+    naoEncontrado = f"_O verbete_ *{verbete}* _não foi encontrado._"
 
     if len(sugestao) == 0:
         return naoEncontrado
