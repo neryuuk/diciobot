@@ -211,7 +211,12 @@ def blocoExemplos(tree: HtmlElement) -> str:
     resultado = div.text_content().split(' ')
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
     for each in div.getparent().xpath('node()/div[@class="frase"]'):
-        resultado += f"{each.text_content().strip()}\n\n"
+        text = each.text_content().strip()
+        fonte = each.xpath('./em/text()')
+        if len(fonte) > 0:
+            text = text.replace(f"{fonte[0]}", f"\n_{fonte[0]}_")
+
+        resultado += f"{text}\n\n"
 
     return resultado.strip()
 
