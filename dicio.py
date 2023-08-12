@@ -200,26 +200,20 @@ def blocoFrases(tree: HtmlElement) -> str:
 
 
 def blocoExemplos(tree: HtmlElement) -> str:
-    resultado = ''
-    for each in tree.xpath('//*[@class="tit-exemplo"]/text()'):
-        if 'Exemplo' in each:
-            resultado = each.split(' ')
-    if len(resultado) != 0:
-        resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
-        elemento = tree.xpath('//*[@class="frases"][2]/node()')
-        for cada in elemento:
-            elem = cada.xpath('./node()')
-            for each in elem:
-                if type(each) == HtmlElement:
-                    if each.tag == 'strong':
-                        resultado += '*' + each.text + '*'
-                    elif each.tag == 'em':
-                        resultado += "\n_" + each.text + "_\n"
-                else:
-                    resultado += each
-            resultado += "\n"
+    div = None
+    for each in tree.xpath('//h3[@class="tit-exemplo"]'):
+        if 'Exemplos ' in each.text_content():
+            div = each
 
-    return resultado
+    if div is None:
+        return ''
+
+    resultado = div.text_content().split(' ')
+    resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
+    for each in div.getparent().xpath('node()/div[@class="frase"]'):
+        resultado += f"{each.text_content().strip()}\n\n"
+
+    return resultado.strip()
 
 
 def conjugar(verbete: str) -> str:
