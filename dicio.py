@@ -11,7 +11,7 @@ import re
 def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     endpoint = "https://www.dicio.com.br"
     if pesquisa:
-        endpoint += "/pesquisa.php?" + parse.urlencode({'q': verbete})
+        endpoint += "/pesquisa.php?" + parse.urlencode({"q": verbete})
     elif verbete is not None:
         endpoint += f"/{verbete}/".replace("//", "/")
 
@@ -30,20 +30,20 @@ def buscar(verbete: str, comando: Callable) -> str:
 
     tree = fromstring(str(busca.read(), "utf-8"))
     if tree is None:
-        return ''
+        return ""
 
     if "/pesquisa.php" not in busca.url:
         return f"{comando(verbete, tree)}{fonte(busca.url)}"
 
     # Retornou uma página de busca
-    pagina = tree.xpath('//ul[@class="resultados"]/li/a[@class="_sugg"]')
+    pagina = tree.xpath("//ul[@class='resultados']/li/a[@class='_sugg']")
     if len(pagina) == 0:
         # Não tem nenhuma sugestao para o verbete nao encontrado
-        return ''
+        return ""
 
     # Encontrou resultados pra busca do verbete
     for each in pagina:
-        content = each.xpath('span[@class="list-link"]/text()')
+        content = each.xpath("span[@class='list-link']/text()")
         # Encontrou o verbete solicitado nos resultados
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
@@ -51,12 +51,12 @@ def buscar(verbete: str, comando: Callable) -> str:
             return f"{comando(verbete, tree)}{fonte(busca.url)}"
 
     try:
-        sugestao = pagina[0].xpath('span[@class="list-link"]/text()')[0]
+        sugestao = pagina[0].xpath("span[@class='list-link']/text()")[0]
 
         # Não encontrou o verbete solicitado nos resultados
         return quatroZeroQuatro(verbete, sugestao.strip())
     except:
-        return quatroZeroQuatro(verbete, '')
+        return quatroZeroQuatro(verbete, "")
 
 
 def definir(verbete: str, tree: HtmlElement) -> str:
@@ -73,15 +73,15 @@ def definir(verbete: str, tree: HtmlElement) -> str:
 
 
 def blocoDefinicao(tree: HtmlElement) -> str:
-    titulo = ''
-    for each in tree.xpath('//h2[@class="tit-section"]/text()'):
-        titulo = each.split(' ')
+    titulo = ""
+    for each in tree.xpath("//h2[@class='tit-section']/text()"):
+        titulo = each.split(" ")
 
     if len(titulo) == 0:
-        return ''
+        return ""
 
     mensagem = f"*{' '.join(titulo[:-1])}* _{titulo[-1]}_"
-    definicao = tree.xpath('//p[@class="adicional"]//text()')
+    definicao = tree.xpath("//p[@class='adicional']//text()")
     for each in definicao:
         if "\n" in each and not mensagem.endswith("\n"):
             mensagem += "\n"
@@ -92,15 +92,15 @@ def blocoDefinicao(tree: HtmlElement) -> str:
 
 
 def blocoSignificado(tree: HtmlElement) -> str:
-    titulos = tree.xpath('//h2[@class="tit-significado"]/text()')
+    titulos = tree.xpath("//h2[@class='tit-significado']/text()")
     if len(titulos) == 0:
         return ""
 
     titulo = ""
     for each in titulos:
-        titulo = each.split(' ')
+        titulo = each.split(" ")
     mensagem = f"*{' '.join(titulo[:-1])}* _{titulo[-1]}_\n"
-    for each in tree.xpath('//p[@itemprop="description"]/span'):
+    for each in tree.xpath("//p[@itemprop='description']/span"):
         if type(each) == HtmlElement:
             content = each.text_content().strip().replace("*", "\*")
             if "cl" in each.classes:
@@ -134,16 +134,16 @@ def dia() -> str:
     return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)}"
 
 
-def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = 'Sinônimos') -> str:
+def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinônimos") -> str:
     titulos = tree.xpath(
-        '//h2[contains(@class, "subtitle-significado")]//text()'
+        "//h2[contains(@class, 'subtitle-significado')]//text()"
     )
 
-    resultado = ''
+    resultado = ""
     indice = None
     for i, each in enumerate(titulos):
         if tipo in each:
-            resultado = each.split(' ')
+            resultado = each.split(" ")
             indice = i
 
     if len(resultado) == 0:
@@ -151,8 +151,8 @@ def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = 'Sinô
 
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n"
 
-    blocos = tree.xpath('//p[@class="adicional sinonimos"]')[indice]
-    lista = blocos.xpath('a//text()')
+    blocos = tree.xpath("//p[@class='adicional sinonimos']")[indice]
+    lista = blocos.xpath("a//text()")
 
     if len(lista) > 1:
         resultado += ', '.join(lista[:-1]) + ' e '
@@ -185,13 +185,13 @@ def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
             div = each
 
     if div is None:
-        return ''
+        return ""
 
-    resultado = div.text_content().split(' ')
+    resultado = div.text_content().split(" ")
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
-    for each in div.getparent().xpath('node()/div[@class="frase"]'):
+    for each in div.getparent().xpath("node()/div[@class='frase']"):
         text = re.sub(r"\s{2,}", r" ", each.text_content().strip())
-        fonte = each.xpath('.//em/text()')
+        fonte = each.xpath(".//em/text()")
         if len(fonte) > 0:
             text = text.replace(f"{fonte[0]}", f"\n_{fonte[0]}_")
 
@@ -204,12 +204,12 @@ def conjugar(verbete: str) -> str:
     return manutencao()
 
 
-def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = 'Rimas') -> str:
-    resultado = ''
+def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
+    resultado = ""
     indice = None
-    for i, each in enumerate(tree.xpath('//h3[@class="tit-other"]/text()')):
+    for i, each in enumerate(tree.xpath("//h3[@class='tit-other']/text()")):
         if tipo in each:
-            resultado = each.split(' ')
+            resultado = each.split(" ")
             indice = i
 
     if len(resultado) == 0:
@@ -217,18 +217,18 @@ def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = 'Rimas') -> str:
 
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
     elemento = tree.xpath(
-        '//div[@class="wrap-section"]/h3[@class="tit-other"]/..')[indice].xpath('./ul/li//text()')
+        "//div[@class='wrap-section']/h3[@class='tit-other']/..")[indice].xpath("./ul/li//text()")
     if len(elemento) > 1:
         resultado += f"{', '.join(elemento[:-1])} e "
     return resultado + elemento[-1]
 
 
 def rimas(verbete: str, tree: HtmlElement) -> str:
-    return rimasAnagramas(verbete, tree, 'Rimas')
+    return rimasAnagramas(verbete, tree, "Rimas")
 
 
 def anagramas(verbete: str, tree: HtmlElement) -> str:
-    return rimasAnagramas(verbete, tree, 'Anagramas')
+    return rimasAnagramas(verbete, tree, "Anagramas")
 
 
 def tudo(verbete: str, tree: HtmlElement) -> str:
@@ -239,7 +239,7 @@ def palavra(conteudo: str) -> str:
     if not conteudo.lower().strip():
         return None
 
-    conteudo = conteudo.lower().strip().split(' ', 1)
+    conteudo = conteudo.lower().strip().split(" ", 1)
     if len(conteudo) < 2:
         return None
 
@@ -261,7 +261,7 @@ def manutencao() -> str:
 
 def fonte(pagina) -> str:
     if not pagina:
-        return ''
+        return ""
 
     return f"\n\n*Fonte:* {pagina}"
 
