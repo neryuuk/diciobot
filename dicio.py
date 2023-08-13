@@ -195,8 +195,32 @@ def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
     return resultado.strip()
 
 
-def conjugar(verbete: str) -> str:
-    return manutencao()
+def conjugar(verbete: str, tree: HtmlElement) -> str:
+    if len(tree.xpath("//div[@id='conjugacao']//node()")) == 0:
+        return f"_O verbete_ *{verbete}* _não tem conjugação disponível._\n_Tente um verbo no_ *infinitivo*."
+
+    resultado: str = None
+    for each in tree.xpath("//h3[@class='tit-other']/text()"):
+        if "Conjugação " in each:
+            resultado = each.split(" ")
+            resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n"
+            break
+
+    for each in tree.xpath("//div[@id='conjugacao']/p"):
+        if type(each) == HtmlElement:
+            resultado += re.sub(r" {2,}", r" ", each.text_content().strip())
+    resultado += "\n\n"
+
+    modos_nome = tree.xpath("//div[@class='modo']//text()")
+    for i, modo in enumerate(tree.xpath("//div[contains(@class, 'verb-wrapper')]/ul")):
+        resultado += f"*{modos_nome[i]}*\n"
+        for tempo in modo.findall('li'):
+            resultado += f"*{tempo.find('div').text_content().strip()}*\n"
+            tempo.find('div').drop_tree()
+            texto = tempo.text_content().strip() + "\n\n"
+            resultado += re.sub(r" {2,}", r" ", texto).replace("*", "\*")
+
+    return resultado.strip()
 
 
 def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
