@@ -140,6 +140,7 @@ def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinô
         if tipo in each:
             resultado = each.split(" ")
             indice = i
+            break
 
     if len(resultado) == 0:
         return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
@@ -178,6 +179,7 @@ def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
     for each in tree.xpath(f"//h3[@class='tit-{tipo}']"):
         if TIPO[tipo] in each.text_content():
             div = each
+            break
 
     if div is None:
         return ""
@@ -230,6 +232,7 @@ def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
         if tipo in each:
             resultado = each.split(" ")
             indice = i
+            break
 
     if len(resultado) == 0:
         return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
