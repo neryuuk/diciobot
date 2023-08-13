@@ -18,10 +18,10 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str, comando: Callable) -> str:
+def buscar(verbete: str, comando: Callable) -> [str]:
     verbete = palavra(verbete)
     if not verbete:
-        return erroPalavraFaltando(comando)
+        return [erroPalavraFaltando(comando)]
 
     try:
         busca = request.urlopen(buildEndpoint(verbete, True))
@@ -30,17 +30,16 @@ def buscar(verbete: str, comando: Callable) -> str:
 
     tree = fromstring(str(busca.read(), "utf-8"))
     if tree is None:
-        return ""
+        return [""]
 
     if "/pesquisa.php" not in busca.url:
-        resultado = re.sub(r" *\n *", r"\n", comando(verbete, tree))
-        return f"{resultado}{fonte(busca.url)}"
+        return chamaComando(verbete, comando, busca.url, tree)
 
     # Retornou uma página de busca
     pagina = tree.xpath("//ul[@class='resultados']/li/a[@class='_sugg']")
     if len(pagina) == 0:
         # Não tem nenhuma sugestao para o verbete nao encontrado
-        return ""
+        return [""]
 
     # Encontrou resultados pra busca do verbete
     for each in pagina:
@@ -49,8 +48,7 @@ def buscar(verbete: str, comando: Callable) -> str:
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = fromstring(str(busca.read(), "utf-8"))
-            resultado = re.sub(r" *\n *", r"\n", comando(verbete, tree))
-            return f"{resultado}{fonte(busca.url)}"
+            return chamaComando(verbete, comando, busca.url, tree)
 
     try:
         sugestao = pagina[0].xpath("span[@class='list-link']/text()")[0]
@@ -61,17 +59,24 @@ def buscar(verbete: str, comando: Callable) -> str:
         return quatroZeroQuatro(verbete, "")
 
 
-def definir(verbete: str, tree: HtmlElement) -> str:
+def chamaComando(verbete: str, comando: Callable, url: str, tree: HtmlElement) -> [str]:
+    resultado = []
+    for item in comando(verbete, tree):
+        resultado.append(re.sub(r" *\n *", r"\n", item) + fonte(url))
+    return resultado
+
+
+def definir(verbete: str, tree: HtmlElement) -> [str]:
     definicao: str = blocoDefinicao(tree)
     significado: str = blocoSignificado(tree)
 
     if (len(definicao) + len(significado)) == 0:
-        return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
+        return [f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"]
     elif len(significado) == 0:
         definicao += "Significado: Não encontrado."
-        return definicao
+        return [definicao]
 
-    return f"{definicao}\n\n{significado}".strip().replace("[", "\[")
+    return [f"{definicao}\n\n{significado}".strip().replace("[", "\[")]
 
 
 def blocoDefinicao(tree: HtmlElement) -> str:
@@ -117,20 +122,20 @@ def blocoSignificado(tree: HtmlElement) -> str:
     return mensagem.strip()
 
 
-def quatroZeroQuatro(verbete: str, sugestao: str) -> str:
+def quatroZeroQuatro(verbete: str, sugestao: str) -> [str]:
     naoEncontrado = f"_O verbete_ *{verbete}* _não foi encontrado._"
 
     if len(sugestao) == 0:
-        return naoEncontrado
+        return [naoEncontrado]
 
-    return f"{naoEncontrado}\n\n_Você quis dizer_ *{sugestao}*?"
+    return [f"{naoEncontrado}\n\n_Você quis dizer_ *{sugestao}*?"]
 
 
 def dia() -> str:
     pagina = request.urlopen(buildEndpoint())
     tree = fromstring(str(pagina.read(), "utf-8"))
     doDia = tree.xpath("//*[@class='word-link']/text()")[0]
-    return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)}"
+    return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)[0]}"
 
 
 def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinônimos") -> str:
@@ -155,22 +160,22 @@ def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinô
     return resultado + lista[-1]
 
 
-def sinonimos(verbete: str, tree: HtmlElement) -> str:
-    return buscarSinonimosAntonimos(verbete, tree, "Sinônimos")
+def sinonimos(verbete: str, tree: HtmlElement) -> [str]:
+    return [buscarSinonimosAntonimos(verbete, tree, "Sinônimos")]
 
 
-def antonimos(verbete: str, tree: HtmlElement) -> str:
-    return buscarSinonimosAntonimos(verbete, tree, "Antônimos")
+def antonimos(verbete: str, tree: HtmlElement) -> [str]:
+    return [buscarSinonimosAntonimos(verbete, tree, "Antônimos")]
 
 
-def exemplos(verbete: str, tree: HtmlElement) -> str:
+def exemplos(verbete: str, tree: HtmlElement) -> [str]:
     frases = blocoFrasesExemplos(tree)
     exemplos = blocoFrasesExemplos(tree, "exemplo")
 
     if len(frases + exemplos) == 0:
-        return f"_O verbete_ *{verbete}* _não tem frases ou exemplos disponíveis._"
+        return [f"_O verbete_ *{verbete}* _não tem frases ou exemplos disponíveis._"]
 
-    return f"{frases}\n\n{exemplos}".strip()
+    return [f"{frases}\n\n{exemplos}".strip()]
 
 
 def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
@@ -197,9 +202,9 @@ def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
     return resultado.strip()
 
 
-def conjugar(verbete: str, tree: HtmlElement) -> str:
+def conjugar(verbete: str, tree: HtmlElement) -> [str]:
     if len(tree.xpath("//div[@id='conjugacao']//node()")) == 0:
-        return f"_O verbete_ *{verbete}* _não tem conjugação disponível._\n_Tente um verbo no_ *infinitivo*."
+        return [f"_O verbete_ *{verbete}* _não tem conjugação disponível._\n_Tente um verbo no_ *infinitivo*."]
 
     resultado: str = None
     for each in tree.xpath("//h3[@class='tit-other']/text()"):
@@ -222,7 +227,7 @@ def conjugar(verbete: str, tree: HtmlElement) -> str:
             texto = tempo.text_content().strip() + "\n\n"
             resultado += re.sub(r" {2,}", r" ", texto).replace("*", "\*")
 
-    return resultado.strip()
+    return [resultado.strip()]
 
 
 def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
@@ -245,12 +250,12 @@ def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
     return resultado + elemento[-1]
 
 
-def rimas(verbete: str, tree: HtmlElement) -> str:
-    return rimasAnagramas(verbete, tree, "Rimas")
+def rimas(verbete: str, tree: HtmlElement) -> [str]:
+    return [rimasAnagramas(verbete, tree, "Rimas")]
 
 
-def anagramas(verbete: str, tree: HtmlElement) -> str:
-    return rimasAnagramas(verbete, tree, "Anagramas")
+def anagramas(verbete: str, tree: HtmlElement) -> [str]:
+    return [rimasAnagramas(verbete, tree, "Anagramas")]
 
 
 def tudo(verbete: str, tree: HtmlElement) -> str:
