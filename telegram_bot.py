@@ -229,7 +229,11 @@ async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(dicio.manutencao())
+    for comando in dicio.buscar(update.message.text, dicio.tudo):
+        await update.message.reply_markdown(
+            comando,
+            disable_web_page_preview=True,
+        )
 
 
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

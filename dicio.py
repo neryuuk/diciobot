@@ -258,8 +258,16 @@ def anagramas(verbete: str, tree: HtmlElement) -> [str]:
     return [rimasAnagramas(verbete, tree, "Anagramas")]
 
 
-def tudo(verbete: str, tree: HtmlElement) -> str:
-    return manutencao()
+def tudo(verbete: str, tree: HtmlElement) -> [str]:
+    return (
+        definir(verbete, tree) +
+        sinonimos(verbete, tree) +
+        antonimos(verbete, tree) +
+        exemplos(verbete, tree) +
+        conjugar(verbete, tree) +
+        rimas(verbete, tree) +
+        anagramas(verbete, tree)
+    )
 
 
 def palavra(conteudo: str) -> str:
@@ -282,10 +290,6 @@ def erroPalavraFaltando(comando: Callable) -> str:
     )
 
 
-def manutencao() -> str:
-    return f"Essa opção está em manutenção :(\n\n{ajuda()}"
-
-
 def fonte(pagina) -> str:
     if not pagina:
         return ""
@@ -304,7 +308,7 @@ def ajuda() -> str:
         f"/conjugar ou /c - *conjugar* um _verbo_\n"
         f"/rimas ou /r - *rimas* de um _verbete_\n"
         f"/anagramas ou /ana - *anagramas* de um _verbete_\n"
-        # f"/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_\n"
+        f"/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_\n"
         f"/dia - *Palavra do dia*."
     )
 
