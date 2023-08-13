@@ -33,7 +33,8 @@ def buscar(verbete: str, comando: Callable) -> str:
         return ""
 
     if "/pesquisa.php" not in busca.url:
-        return f"{comando(verbete, tree)}{fonte(busca.url)}"
+        resultado = re.sub(r" *\n *", r"\n", comando(verbete, tree))
+        return f"{resultado}{fonte(busca.url)}"
 
     # Retornou uma página de busca
     pagina = tree.xpath("//ul[@class='resultados']/li/a[@class='_sugg']")
@@ -48,7 +49,8 @@ def buscar(verbete: str, comando: Callable) -> str:
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = fromstring(str(busca.read(), "utf-8"))
-            return f"{comando(verbete, tree)}{fonte(busca.url)}"
+            resultado = re.sub(r" *\n *", r"\n", comando(verbete, tree))
+            return f"{resultado}{fonte(busca.url)}"
 
     try:
         sugestao = pagina[0].xpath("span[@class='list-link']/text()")[0]
@@ -60,8 +62,8 @@ def buscar(verbete: str, comando: Callable) -> str:
 
 
 def definir(verbete: str, tree: HtmlElement) -> str:
-    definicao = blocoDefinicao(tree)
-    significado = blocoSignificado(tree)
+    definicao: str = blocoDefinicao(tree)
+    significado: str = blocoSignificado(tree)
 
     if (len(definicao) + len(significado)) == 0:
         return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
@@ -69,7 +71,7 @@ def definir(verbete: str, tree: HtmlElement) -> str:
         definicao += "Significado: Não encontrado."
         return definicao
 
-    return f"{definicao}{significado}".replace("[", "\[")
+    return f"{definicao}\n\n{significado}".strip().replace("[", "\[")
 
 
 def blocoDefinicao(tree: HtmlElement) -> str:
@@ -88,7 +90,7 @@ def blocoDefinicao(tree: HtmlElement) -> str:
         if len(each.strip()) > 0:
             mensagem += f"{each.strip()} "
 
-    return f"{mensagem}\n\n".replace(" \n", "\n").replace("\n ", "\n")
+    return mensagem.strip()
 
 
 def blocoSignificado(tree: HtmlElement) -> str:
@@ -112,14 +114,11 @@ def blocoSignificado(tree: HtmlElement) -> str:
         else:
             mensagem += f"{each.strip()}\n"
 
-    return f"{mensagem}".replace(" \n", "\n").replace("\n ", "\n")
+    return mensagem.strip()
 
 
-def quatroZeroQuatro(verbete: str, sugestao: str, verbo: bool = False) -> str:
-    naoEncontrado = "_O {}_ *{}* _não foi encontrado._".format(
-        "verbo" if verbo else "verbete",
-        verbete
-    )
+def quatroZeroQuatro(verbete: str, sugestao: str) -> str:
+    naoEncontrado = f"_O verbete_ *{verbete}* _não foi encontrado._"
 
     if len(sugestao) == 0:
         return naoEncontrado
@@ -141,6 +140,7 @@ def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinô
         if tipo in each:
             resultado = each.split(" ")
             indice = i
+            break
 
     if len(resultado) == 0:
         return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
@@ -170,7 +170,7 @@ def exemplos(verbete: str, tree: HtmlElement) -> str:
     if len(frases + exemplos) == 0:
         return f"_O verbete_ *{verbete}* _não tem frases ou exemplos disponíveis._"
 
-    return f"{frases}\n\n{exemplos}".strip().replace("\n ", "\n").replace(" \n", "\n")
+    return f"{frases}\n\n{exemplos}".strip()
 
 
 def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
@@ -179,6 +179,7 @@ def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
     for each in tree.xpath(f"//h3[@class='tit-{tipo}']"):
         if TIPO[tipo] in each.text_content():
             div = each
+            break
 
     if div is None:
         return ""
@@ -187,17 +188,41 @@ def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
     resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_:\n"
     for each in div.getparent().xpath("node()/div[@class='frase']"):
         text = re.sub(r"\s{2,}", r" ", each.text_content().strip())
-        fonte = each.xpath(".//em/text()")
-        if len(fonte) > 0:
-            text = text.replace(f"{fonte[0]}", f"\n_{fonte[0]}_")
+        ref = each.xpath(".//em/text()")
+        if len(ref) > 0:
+            text = text.replace(f"{ref[0]}", f"\n_{ref[0]}_")
 
         resultado += f"{text}\n\n"
 
     return resultado.strip()
 
 
-def conjugar(verbete: str) -> str:
-    return manutencao()
+def conjugar(verbete: str, tree: HtmlElement) -> str:
+    if len(tree.xpath("//div[@id='conjugacao']//node()")) == 0:
+        return f"_O verbete_ *{verbete}* _não tem conjugação disponível._\n_Tente um verbo no_ *infinitivo*."
+
+    resultado: str = None
+    for each in tree.xpath("//h3[@class='tit-other']/text()"):
+        if "Conjugação " in each:
+            resultado = each.split(" ")
+            resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
+            break
+
+    for each in tree.xpath("//div[@id='conjugacao']/p"):
+        if type(each) == HtmlElement:
+            resultado += re.sub(r" {2,}", r" ", each.text_content().strip())
+    resultado += "\n\n"
+
+    modos_nome = tree.xpath("//div[@class='modo']//text()")
+    for i, modo in enumerate(tree.xpath("//div[contains(@class, 'verb-wrapper')]/ul")):
+        resultado += f"*{modos_nome[i]}*\n"
+        for tempo in modo.findall('li'):
+            resultado += f"*{tempo.find('div').text_content().strip()}*\n"
+            tempo.find('div').drop_tree()
+            texto = tempo.text_content().strip() + "\n\n"
+            resultado += re.sub(r" {2,}", r" ", texto).replace("*", "\*")
+
+    return resultado.strip()
 
 
 def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
@@ -207,6 +232,7 @@ def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
         if tipo in each:
             resultado = each.split(" ")
             indice = i
+            break
 
     if len(resultado) == 0:
         return f"_O verbete_ *{verbete}* _não tem {tipo.lower()} disponíveis._"
@@ -270,7 +296,7 @@ def ajuda() -> str:
         f"/sinonimos ou /s - *sinônimos* de um _verbete_\n"
         f"/antonimos ou /a - *antônimos* de um _verbete_\n"
         f"/exemplos ou /e - *exemplos* de utilização de um _verbete_\n"
-        # f"/conjugar ou /c - *conjugar* um _verbo_\n"
+        f"/conjugar ou /c - *conjugar* um _verbo_\n"
         f"/rimas ou /r - *rimas* de um _verbete_\n"
         f"/anagramas ou /ana - *anagramas* de um _verbete_\n"
         # f"/tudo ou /t - *todas* as opções *disponíveis* de um _verbete_\n"
