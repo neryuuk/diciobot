@@ -71,7 +71,7 @@ def definir(verbete: str, tree: HtmlElement) -> str:
         definicao += "Significado: Não encontrado."
         return definicao
 
-    return f"{definicao}{significado}".replace("[", "\[")
+    return f"{definicao}\n\n{significado}".strip().replace("[", "\[")
 
 
 def blocoDefinicao(tree: HtmlElement) -> str:
@@ -90,7 +90,7 @@ def blocoDefinicao(tree: HtmlElement) -> str:
         if len(each.strip()) > 0:
             mensagem += f"{each.strip()} "
 
-    return f"{mensagem}\n\n"
+    return mensagem.strip()
 
 
 def blocoSignificado(tree: HtmlElement) -> str:
@@ -114,7 +114,7 @@ def blocoSignificado(tree: HtmlElement) -> str:
         else:
             mensagem += f"{each.strip()}\n"
 
-    return f"{mensagem}"
+    return mensagem.strip()
 
 
 def quatroZeroQuatro(verbete: str, sugestao: str) -> str:
