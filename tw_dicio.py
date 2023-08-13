@@ -30,3 +30,9 @@ print(buscar("/ana chicharro", anagramas))
 print(buscar("/e carro", exemplos))
 
 print(buscar("/e pseudocristão", exemplos))
+
+print(buscar("/c correr", conjugar))
+
+print(buscar("/c correu", conjugar))
+
+print(buscar("/c carro", conjugar))
