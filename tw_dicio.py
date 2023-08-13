@@ -23,9 +23,9 @@ print(buscar("/r carro", rimas))
 
 print(buscar("/r orfã", rimas))
 
-print(buscar("/a carro", anagramas))
+print(buscar("/ana carro", anagramas))
 
-print(buscar("/a chicharro", anagramas))
+print(buscar("/ana chicharro", anagramas))
 
 print(buscar("/e carro", exemplos))
 
