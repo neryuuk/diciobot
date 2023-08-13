@@ -203,7 +203,7 @@ def conjugar(verbete: str, tree: HtmlElement) -> str:
     for each in tree.xpath("//h3[@class='tit-other']/text()"):
         if "Conjugação " in each:
             resultado = each.split(" ")
-            resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n"
+            resultado = f"*{' '.join(resultado[:-1])}* _{resultado[-1]}_\n\n"
             break
 
     for each in tree.xpath("//div[@id='conjugacao']/p"):
