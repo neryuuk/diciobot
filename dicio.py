@@ -62,8 +62,8 @@ def buscar(verbete: str, comando: Callable) -> str:
 
 
 def definir(verbete: str, tree: HtmlElement) -> str:
-    definicao = blocoDefinicao(tree)
-    significado = blocoSignificado(tree)
+    definicao: str = blocoDefinicao(tree)
+    significado: str = blocoSignificado(tree)
 
     if (len(definicao) + len(significado)) == 0:
         return f"_O verbete_ *{verbete}* _não tem definição ou significado disponíveis._"
