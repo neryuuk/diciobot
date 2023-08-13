@@ -143,7 +143,7 @@ async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logHandler(update)
     await update.message.reply_markdown(
         dicio.dia(),
-        disable_web_page_preview=True
+        disable_web_page_preview=True,
     )
 
 
@@ -153,8 +153,8 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.definir),
-        disable_web_page_preview=True
+        dicio.buscar(update.message.text, dicio.definir)[0],
+        disable_web_page_preview=True,
     )
 
 
@@ -164,8 +164,8 @@ async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.sinonimos),
-        disable_web_page_preview=True
+        dicio.buscar(update.message.text, dicio.sinonimos)[0],
+        disable_web_page_preview=True,
     )
 
 
@@ -175,8 +175,8 @@ async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.antonimos),
-        disable_web_page_preview=True
+        dicio.buscar(update.message.text, dicio.antonimos)[0],
+        disable_web_page_preview=True,
     )
 
 
@@ -186,8 +186,8 @@ async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.exemplos),
-        disable_web_page_preview=True
+        dicio.buscar(update.message.text, dicio.exemplos)[0],
+        disable_web_page_preview=True,
     )
 
 
@@ -197,8 +197,8 @@ async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.conjugar),
-        disable_web_page_preview=True
+        dicio.buscar(update.message.text, dicio.conjugar)[0],
+        disable_web_page_preview=True,
     )
 
 
@@ -208,8 +208,8 @@ async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.rimas),
-        disable_web_page_preview=True
+        dicio.buscar(update.message.text, dicio.rimas)[0],
+        disable_web_page_preview=True,
     )
 
 
@@ -219,8 +219,8 @@ async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     logHandler(update)
     await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.anagramas),
-        disable_web_page_preview=True
+        dicio.buscar(update.message.text, dicio.anagramas)[0],
+        disable_web_page_preview=True,
     )
 
 
@@ -229,7 +229,11 @@ async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
 
     logHandler(update)
-    await update.message.reply_markdown(dicio.manutencao())
+    for comando in dicio.buscar(update.message.text, dicio.tudo):
+        await update.message.reply_markdown(
+            comando,
+            disable_web_page_preview=True,
+        )
 
 
 async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -247,7 +251,7 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
         await update.message.reply_markdown(
             dicio.buscar(f"/d {word.strip().lower()}", dicio.definir),
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
         )
 
 
@@ -276,7 +280,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     await context.bot.send_message(
         chat_id=CHAT_ID,
         text=message,
-        parse_mode=ParseMode.HTML
+        parse_mode=ParseMode.HTML,
     )
 
 
