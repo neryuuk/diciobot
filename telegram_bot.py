@@ -112,7 +112,7 @@ def logHandler(update: Update) -> None:
     logging.getLogger(command(update)).log(LOG_LEVEL, log)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -124,7 +124,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_markdown(reply)
 
 
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def help(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -136,7 +136,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_markdown(dicio.ajuda())
 
 
-async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def dia(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -147,7 +147,7 @@ async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def definir(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -158,7 +158,7 @@ async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def sinonimos(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -169,7 +169,7 @@ async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def antonimos(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -180,7 +180,7 @@ async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def exemplos(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -191,7 +191,7 @@ async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def conjugar(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -202,7 +202,7 @@ async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def rimas(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -213,7 +213,7 @@ async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def anagramas(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -224,7 +224,7 @@ async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def tudo(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -236,7 +236,7 @@ async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
 
-async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def fallback(update: Update, _) -> None:
     if not isValid(update):
         return
 
