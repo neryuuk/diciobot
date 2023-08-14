@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
-from collections.abc import Callable
 from lxml.html import fromstring, HtmlElement
 from requests.exceptions import TooManyRedirects
 from urllib import parse, request
@@ -18,7 +17,7 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str, comando: Callable) -> [str]:
+def buscar(verbete: str, comando: callable) -> [str]:
     verbete = palavra(verbete)
     if not verbete:
         return [erroPalavraFaltando(comando)]
@@ -59,7 +58,7 @@ def buscar(verbete: str, comando: Callable) -> [str]:
         return quatroZeroQuatro(verbete, "")
 
 
-def chamaComando(verbete: str, comando: Callable, url: str, tree: HtmlElement) -> [str]:
+def chamaComando(verbete: str, comando: callable, url: str, tree: HtmlElement) -> [str]:
     resultado = []
     for item in comando(verbete, tree):
         resultado.append(re.sub(r" *\n *", r"\n", item) + fonte(url))
@@ -281,7 +280,7 @@ def palavra(conteudo: str) -> str:
     return conteudo[-1]
 
 
-def erroPalavraFaltando(comando: Callable) -> str:
+def erroPalavraFaltando(comando: callable) -> str:
     return (
         f"Você precisa informar uma palavra junto com o comando.\n"
         f"\n"

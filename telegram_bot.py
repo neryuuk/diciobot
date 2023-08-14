@@ -31,6 +31,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"Visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 
+MAX_LEN: int = 4000
 LOG_LEVEL = logging.INFO
 BOT_ID = getenv('TELEGRAM_BOT_ID')
 CHAT_ID = getenv('CHAT_ID')
@@ -112,7 +113,7 @@ def logHandler(update: Update) -> None:
     logging.getLogger(command(update)).log(LOG_LEVEL, log)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -124,7 +125,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_markdown(reply)
 
 
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def help(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -136,7 +137,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_markdown(dicio.ajuda())
 
 
-async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def dia(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -147,96 +148,48 @@ async def dia(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def definir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handler(method: callable, update: Update) -> None:
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.definir)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
-async def sinonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.sinonimos)[0],
-        disable_web_page_preview=True,
-    )
+async def definir(update: Update, _) -> None:
+    await handler(dicio.definir, update)
 
 
-async def antonimos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.antonimos)[0],
-        disable_web_page_preview=True,
-    )
+async def sinonimos(update: Update, _) -> None:
+    await handler(dicio.sinonimos, update)
 
 
-async def exemplos(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.exemplos)[0],
-        disable_web_page_preview=True,
-    )
+async def antonimos(update: Update, _) -> None:
+    await handler(dicio.antonimos, update)
 
 
-async def conjugar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.conjugar)[0],
-        disable_web_page_preview=True,
-    )
+async def exemplos(update: Update, _) -> None:
+    await handler(dicio.exemplos, update)
 
 
-async def rimas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.rimas)[0],
-        disable_web_page_preview=True,
-    )
+async def conjugar(update: Update, _) -> None:
+    await handler(dicio.conjugar, update)
 
 
-async def anagramas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.anagramas)[0],
-        disable_web_page_preview=True,
-    )
+async def rimas(update: Update, _) -> None:
+    await handler(dicio.rimas, update)
 
 
-async def tudo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for comando in dicio.buscar(update.message.text, dicio.tudo):
-        await update.message.reply_markdown(
-            comando,
-            disable_web_page_preview=True,
-        )
+async def anagramas(update: Update, _) -> None:
+    await handler(dicio.anagramas, update)
 
 
-async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def tudo(update: Update, _) -> None:
+    await handler(dicio.tudo, update)
+
+
+async def fallback(update: Update, _) -> None:
     if not isValid(update):
         return
 
@@ -250,7 +203,7 @@ async def fallback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             continue
 
         await update.message.reply_markdown(
-            dicio.buscar(f"/d {word.strip().lower()}", dicio.definir),
+            dicio.buscar(f"/d {word.strip().lower()}", dicio.definir)[0],
             disable_web_page_preview=True,
         )
 
@@ -274,11 +227,10 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def iterateError(content: str, context: ContextTypes.DEFAULT_TYPE, start: int = 0):
-    MAX_LEN = 4000
-
-    await context.bot.send_message(CHAT_ID, content[start:start + MAX_LEN], ParseMode.HTML)
+    newStart: int = start + MAX_LEN
+    await context.bot.send_message(CHAT_ID, f"<pre>{content[start:newStart]}</pre>", ParseMode.HTML)
     if len(content[start:]) > MAX_LEN:
-        await iterateError(content, context, start + MAX_LEN)
+        await iterateError(content, context, newStart)
 
 
 def main() -> None:
