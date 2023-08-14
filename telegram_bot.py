@@ -157,83 +157,35 @@ async def handler(method: callable, update: Update) -> None:
 
 
 async def definir(update: Update, _) -> None:
-    method = dicio.definir
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.definir, update)
 
 
 async def sinonimos(update: Update, _) -> None:
-    method = dicio.sinonimos
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.sinonimos, update)
 
 
 async def antonimos(update: Update, _) -> None:
-    method = dicio.antonimos
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.antonimos, update)
 
 
 async def exemplos(update: Update, _) -> None:
-    method = dicio.exemplos
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.exemplos, update)
 
 
 async def conjugar(update: Update, _) -> None:
-    method = dicio.conjugar
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.conjugar, update)
 
 
 async def rimas(update: Update, _) -> None:
-    method = dicio.rimas
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.rimas, update)
 
 
 async def anagramas(update: Update, _) -> None:
-    method = dicio.anagramas
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.anagramas, update)
 
 
 async def tudo(update: Update, _) -> None:
-    method = dicio.tudo
-    if not isValid(update):
-        return
-
-    logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
-        await update.message.reply_markdown(resultado, True)
+    await handler(dicio.tudo, update)
 
 
 async def fallback(update: Update, _) -> None:
