@@ -250,7 +250,7 @@ async def fallback(update: Update, _) -> None:
             continue
 
         await update.message.reply_markdown(
-            dicio.buscar(f"/d {word.strip().lower()}", dicio.definir),
+            dicio.buscar(f"/d {word.strip().lower()}", dicio.definir)[0],
             disable_web_page_preview=True,
         )
 
