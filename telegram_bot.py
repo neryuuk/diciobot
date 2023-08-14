@@ -147,6 +147,15 @@ async def dia(update: Update, _) -> None:
     )
 
 
+async def handler(method: callable, update: Update) -> None:
+    if not isValid(update):
+        return
+
+    logHandler(update)
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
+
+
 async def definir(update: Update, _) -> None:
     method = dicio.definir
     if not isValid(update):
