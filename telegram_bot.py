@@ -228,7 +228,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 async def iterateError(content: str, context: ContextTypes.DEFAULT_TYPE, start: int = 0):
     MAX_LEN = 4000
 
-    await context.bot.send_message(CHAT_ID, content[start:start + MAX_LEN], ParseMode.HTML)
+    await context.bot.send_message(CHAT_ID, f"<pre>{content[start:start + MAX_LEN]}</pre>", ParseMode.HTML)
     if len(content[start:]) > MAX_LEN:
         await iterateError(content, context, start + MAX_LEN)
 
