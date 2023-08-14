@@ -31,6 +31,7 @@ if __version_info__ < (20, 0, 0, "alpha", 1):
         f"Visit https://docs.python-telegram-bot.org/en/v{TG_VER}/examples.html"
     )
 
+MAX_LEN: int = 4000
 LOG_LEVEL = logging.INFO
 BOT_ID = getenv('TELEGRAM_BOT_ID')
 CHAT_ID = getenv('CHAT_ID')
@@ -226,11 +227,10 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def iterateError(content: str, context: ContextTypes.DEFAULT_TYPE, start: int = 0):
-    MAX_LEN = 4000
-    NEW_START = start + MAX_LEN
-    await context.bot.send_message(CHAT_ID, f"<pre>{content[start:NEW_START]}</pre>", ParseMode.HTML)
+    newStart: int = start + MAX_LEN
+    await context.bot.send_message(CHAT_ID, f"<pre>{content[start:newStart]}</pre>", ParseMode.HTML)
     if len(content[start:]) > MAX_LEN:
-        await iterateError(content, context, NEW_START)
+        await iterateError(content, context, newStart)
 
 
 def main() -> None:
