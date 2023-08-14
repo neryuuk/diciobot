@@ -148,92 +148,83 @@ async def dia(update: Update, _) -> None:
 
 
 async def definir(update: Update, _) -> None:
+    method = dicio.definir
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.definir)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def sinonimos(update: Update, _) -> None:
+    method = dicio.sinonimos
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.sinonimos)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def antonimos(update: Update, _) -> None:
+    method = dicio.antonimos
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.antonimos)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def exemplos(update: Update, _) -> None:
+    method = dicio.exemplos
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.exemplos)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def conjugar(update: Update, _) -> None:
+    method = dicio.conjugar
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.conjugar)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def rimas(update: Update, _) -> None:
+    method = dicio.rimas
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.rimas)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def anagramas(update: Update, _) -> None:
+    method = dicio.anagramas
     if not isValid(update):
         return
 
     logHandler(update)
-    await update.message.reply_markdown(
-        dicio.buscar(update.message.text, dicio.anagramas)[0],
-        disable_web_page_preview=True,
-    )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def tudo(update: Update, _) -> None:
+    method = dicio.tudo
     if not isValid(update):
         return
 
     logHandler(update)
-    for comando in dicio.buscar(update.message.text, dicio.tudo):
-        await update.message.reply_markdown(
-            comando,
-            disable_web_page_preview=True,
-        )
+    for resultado in dicio.buscar(update.message.text, method):
+        await update.message.reply_markdown(resultado, True)
 
 
 async def fallback(update: Update, _) -> None:
