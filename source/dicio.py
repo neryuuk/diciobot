@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
 from lxml.html import fromstring, HtmlElement
-from requests.exceptions import TooManyRedirects
 from urllib import parse, request
 import re
 
@@ -22,10 +21,7 @@ def buscar(verbete: str, comando: callable) -> [str]:
     if not verbete:
         return [erroPalavraFaltando(comando)]
 
-    try:
-        busca = request.urlopen(buildEndpoint(verbete, True))
-    except TooManyRedirects:
-        pass
+    busca = request.urlopen(buildEndpoint(verbete, True))
 
     tree = fromstring(str(busca.read(), "utf-8"))
     if tree is None:
