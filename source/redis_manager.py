@@ -24,3 +24,30 @@ def get(word: str):
 
     content = conn.json().get(word)
     return content
+
+
+def post(word: str, content) -> str:
+    comandos = [
+        'definir',
+        'sinonimos',
+        'antonimos',
+        'exemplos',
+        'conjugar',
+        'rimas',
+        'anagramas',
+    ]
+
+    if not word or len(word) == 0:
+        return None
+
+    if not content:
+        return None
+
+    result = {}
+
+    for i, comando in enumerate(comandos):
+        result[comando] = content[i]
+
+    conn.json().set(word, Path.root_path(), result)
+
+    return content
