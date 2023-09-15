@@ -51,7 +51,7 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(where="src"),  # Required
+    packages=find_packages(where="source"),  # Required
     python_requires=">=3.7, <4",
     install_requires=[
         "lxml", "python-dotenv", "python-telegram-bot", "redis", "Requests"

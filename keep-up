@@ -1,8 +1,0 @@
-#!/bin/bash
-while [ true ]
-do
-  pid=`ps -fC python3 | grep $1 | awk '{print $2}' -`
-  if [ -z "$pid" ]; then
-    $1
-  fi
-done
