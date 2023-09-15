@@ -1,7 +1,5 @@
 # fly.toml app configuration file generated for diciobot on 2023-09-14T20:54:41-03:00
-#
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
 
 app = "diciobot"
 primary_region = "gru"
@@ -15,9 +13,9 @@ primary_region = "gru"
   REDIS_USER = "diciobot"
 
 [http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = false
   auto_start_machines = true
+  auto_stop_machines = false
+  force_https = true
+  internal_port = 8080
   min_machines_running = 1
   processes = ["app"]
