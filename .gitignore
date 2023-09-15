@@ -1,4 +1,3 @@
 .env
-nohup.out
-config.json
 __pycache__
+config.json
