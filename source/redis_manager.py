@@ -5,6 +5,16 @@ from redis.commands.json.path import Path
 
 load_dotenv()
 
+COMMANDS = [
+    'definir',
+    'sinonimos',
+    'antonimos',
+    'exemplos',
+    'conjugar',
+    'rimas',
+    'anagramas',
+]
+
 pool = ConnectionPool(
     host=getenv('REDIS_HOST'),
     port=getenv('REDIS_PORT'),
@@ -23,7 +33,7 @@ def get(word: str, option: str = None):
         return None
 
     content = conn.json().get(word)
-    if option:
+    if option and option in COMMANDS:
         return [content[option]]
 
     resultado = []
@@ -33,17 +43,7 @@ def get(word: str, option: str = None):
     return resultado
 
 
-def post(word: str, content) -> str:
-    comandos = [
-        'definir',
-        'sinonimos',
-        'antonimos',
-        'exemplos',
-        'conjugar',
-        'rimas',
-        'anagramas',
-    ]
-
+def post(word: str, content, option: str = None) -> str:
     if not word or len(word) == 0:
         return None
 
@@ -52,9 +52,12 @@ def post(word: str, content) -> str:
 
     result = {}
 
-    for i, comando in enumerate(comandos):
-        result[comando] = content[i]
+    for i, command in enumerate(COMMANDS):
+        result[command] = content[i]
 
     conn.json().set(word, Path.root_path(), result)
+
+    if option and option in COMMANDS:
+        return [result[option]]
 
     return content
