@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
 from lxml.html import fromstring, HtmlElement
+from redis_manager import post
 from urllib import parse, request
 import re
 
@@ -254,7 +255,7 @@ def anagramas(verbete: str, tree: HtmlElement) -> [str]:
 
 
 def tudo(verbete: str, tree: HtmlElement) -> [str]:
-    return (
+    return post(verbete, (
         definir(verbete, tree) +
         sinonimos(verbete, tree) +
         antonimos(verbete, tree) +
@@ -262,7 +263,7 @@ def tudo(verbete: str, tree: HtmlElement) -> [str]:
         conjugar(verbete, tree) +
         rimas(verbete, tree) +
         anagramas(verbete, tree)
-    )
+    ))
 
 
 def palavra(conteudo: str) -> str:
