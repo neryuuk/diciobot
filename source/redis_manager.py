@@ -15,7 +15,7 @@ pool = ConnectionPool(
 conn = Redis(connection_pool=pool)
 
 
-def get(word: str):
+def get(word: str, option: str):
     if not word:
         return None
 
@@ -23,6 +23,10 @@ def get(word: str):
         return None
 
     content = conn.json().get(word)
+
+    if option:
+        return content[option]
+
     return content
 
 
