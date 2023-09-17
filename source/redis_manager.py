@@ -26,13 +26,13 @@ conn = Redis(connection_pool=pool)
 
 
 def get(word: str, option: str = None):
-    if not word:
-        return None
-
-    if len(word) == 0:
+    if not word or len(word) == 0:
         return None
 
     content = conn.json().get(word)
+    if not content:
+        return None
+
     if option and option in COMMANDS:
         return [content[option]]
 
