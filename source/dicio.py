@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=unused-argument, wrong-import-position
 from lxml.html import fromstring, HtmlElement
-from redis_manager import post
+from redis_manager import get, post
 from urllib import parse, request
 import re
 
@@ -21,6 +21,10 @@ def buscar(verbete: str, comando: callable) -> [str]:
     verbete = palavra(verbete)
     if not verbete:
         return [erroPalavraFaltando(comando)]
+
+    cache = get(verbete, comando.__name__)
+    if cache:
+        return cache
 
     busca = request.urlopen(buildEndpoint(verbete, True))
 
