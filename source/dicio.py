@@ -17,12 +17,12 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str, comando: callable) -> [str]:
+def buscar(verbete: str, opcao: str = None) -> [str]:
     verbete = palavra(verbete)
     if not verbete:
-        return [erroPalavraFaltando(comando)]
+        return [erroPalavraFaltando(opcao)]
 
-    cache = get(verbete, comando.__name__)
+    cache = get(verbete, opcao)
     if cache:
         return cache
 
@@ -33,7 +33,7 @@ def buscar(verbete: str, comando: callable) -> [str]:
         return [""]
 
     if "/pesquisa.php" not in busca.url:
-        return chamaComando(verbete, comando, busca.url, tree)
+        return chamaComando(verbete, opcao, busca.url, tree)
 
     # Retornou uma página de busca
     pagina = tree.xpath("//ul[@class='resultados']/li/a[@class='_sugg']")
@@ -48,7 +48,7 @@ def buscar(verbete: str, comando: callable) -> [str]:
         if content and content[0] and (content[0].strip() == verbete):
             busca = request.urlopen(buildEndpoint(each.attrib["href"]))
             tree = fromstring(str(busca.read(), "utf-8"))
-            return chamaComando(verbete, comando, busca.url, tree)
+            return chamaComando(verbete, opcao, busca.url, tree)
 
     try:
         sugestao = pagina[0].xpath("span[@class='list-link']/text()")[0]
@@ -59,9 +59,9 @@ def buscar(verbete: str, comando: callable) -> [str]:
         return quatroZeroQuatro(verbete, "")
 
 
-def chamaComando(verbete: str, comando: callable, url: str, tree: HtmlElement) -> [str]:
+def chamaComando(verbete: str, opcao: str, url: str, tree: HtmlElement) -> [str]:
     resultado = []
-    for item in comando(verbete, tree):
+    for item in tudo(verbete, tree, opcao):
         resultado.append(re.sub(r" *\n *", r"\n", item) + fonte(url))
     return resultado
 
@@ -135,7 +135,7 @@ def dia() -> str:
     pagina = request.urlopen(buildEndpoint())
     tree = fromstring(str(pagina.read(), "utf-8"))
     doDia = tree.xpath("//*[@class='word-link']/text()")[0]
-    return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', definir)[0]}"
+    return f"*Palavra do dia:* _{doDia}_\n\n{buscar(f'/dia {doDia}', 'definir')[0]}"
 
 
 def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinônimos") -> str:
@@ -258,7 +258,7 @@ def anagramas(verbete: str, tree: HtmlElement) -> [str]:
     return [rimasAnagramas(verbete, tree, "Anagramas")]
 
 
-def tudo(verbete: str, tree: HtmlElement) -> [str]:
+def tudo(verbete: str, tree: HtmlElement, option: str = None) -> [str]:
     return post(verbete, (
         definir(verbete, tree) +
         sinonimos(verbete, tree) +
@@ -267,7 +267,7 @@ def tudo(verbete: str, tree: HtmlElement) -> [str]:
         conjugar(verbete, tree) +
         rimas(verbete, tree) +
         anagramas(verbete, tree)
-    ))
+    ), option)
 
 
 def palavra(conteudo: str) -> str:
@@ -281,12 +281,12 @@ def palavra(conteudo: str) -> str:
     return conteudo[-1]
 
 
-def erroPalavraFaltando(comando: callable) -> str:
+def erroPalavraFaltando(opcao: str) -> str:
     return (
         f"Você precisa informar uma palavra junto com o comando.\n"
         f"\n"
         f"Exemplo:\n"
-        f"/{comando.__name__} palavra\n"
+        f"/{opcao} palavra\n"
     )
 
 

@@ -7,10 +7,10 @@ composto por definições, significados, exemplos e rimas
 que caracterizam mais de 400.000 palavras e verbetes.
 """
 import dicio
-import html
 import json
 import logging
 from dotenv import load_dotenv
+from html import escape
 from os import getenv
 from telegram import Update, __version__ as TG_VER
 from telegram.constants import ParseMode, ChatType
@@ -148,45 +148,45 @@ async def dia(update: Update, _) -> None:
     )
 
 
-async def handler(method: callable, update: Update) -> None:
+async def handler(update: Update, option: str = None) -> None:
     if not isValid(update):
         return
 
     logHandler(update)
-    for resultado in dicio.buscar(update.message.text, method):
+    for resultado in dicio.buscar(update.message.text, option):
         await update.message.reply_markdown(resultado, True)
 
 
 async def definir(update: Update, _) -> None:
-    await handler(dicio.definir, update)
+    await handler(update, "definir")
 
 
 async def sinonimos(update: Update, _) -> None:
-    await handler(dicio.sinonimos, update)
+    await handler(update, "sinonimos")
 
 
 async def antonimos(update: Update, _) -> None:
-    await handler(dicio.antonimos, update)
+    await handler(update, "antonimos")
 
 
 async def exemplos(update: Update, _) -> None:
-    await handler(dicio.exemplos, update)
+    await handler(update, "exemplos")
 
 
 async def conjugar(update: Update, _) -> None:
-    await handler(dicio.conjugar, update)
+    await handler(update, "conjugar")
 
 
 async def rimas(update: Update, _) -> None:
-    await handler(dicio.rimas, update)
+    await handler(update, "rimas")
 
 
 async def anagramas(update: Update, _) -> None:
-    await handler(dicio.anagramas, update)
+    await handler(update, "anagramas")
 
 
 async def tudo(update: Update, _) -> None:
-    await handler(dicio.tudo, update)
+    await handler(update)
 
 
 async def fallback(update: Update, _) -> None:
@@ -203,7 +203,7 @@ async def fallback(update: Update, _) -> None:
             continue
 
         await update.message.reply_markdown(
-            dicio.buscar(f"/d {word.strip().lower()}", dicio.definir)[0],
+            dicio.buscar(f"/d {word.strip().lower()}", "definir")[0],
             disable_web_page_preview=True,
         )
 
@@ -216,14 +216,14 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
     update_str = update.to_dict() if isinstance(update, Update) else str(update)
     await iterateError(
-        html.escape(json.dumps(update_str, indent=2, ensure_ascii=False)),
+        escape(json.dumps(update_str, indent=2, ensure_ascii=False)),
         context
     )
 
     tb_str = "".join(format_exception(
         None, context.error, context.error.__traceback__
     ))
-    await iterateError(html.escape(tb_str), context)
+    await iterateError(escape(tb_str), context)
 
 
 async def iterateError(content: str, context: ContextTypes.DEFAULT_TYPE, start: int = 0):
