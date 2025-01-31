@@ -17,7 +17,7 @@ def buildEndpoint(verbete: str = None, pesquisa: bool = False):
     return endpoint
 
 
-def buscar(verbete: str, opcao: str = None) -> [str]:
+def buscar(verbete: str, opcao: str = None) -> list[str]:
     verbete = palavra(verbete)
     if not verbete:
         return [erroPalavraFaltando(opcao)]
@@ -59,14 +59,14 @@ def buscar(verbete: str, opcao: str = None) -> [str]:
         return quatroZeroQuatro(verbete, "")
 
 
-def chamaComando(verbete: str, opcao: str, url: str, tree: HtmlElement) -> [str]:
+def chamaComando(verbete: str, opcao: str, url: str, tree: HtmlElement) -> list[str]:
     resultado = []
     for item in tudo(verbete, tree, opcao):
         resultado.append(re.sub(r" *\n *", r"\n", item) + fonte(url))
     return resultado
 
 
-def definir(verbete: str, tree: HtmlElement) -> [str]:
+def definir(verbete: str, tree: HtmlElement) -> list[str]:
     definicao: str = blocoDefinicao(tree)
     significado: str = blocoSignificado(tree)
 
@@ -122,7 +122,7 @@ def blocoSignificado(tree: HtmlElement) -> str:
     return mensagem.strip()
 
 
-def quatroZeroQuatro(verbete: str, sugestao: str) -> [str]:
+def quatroZeroQuatro(verbete: str, sugestao: str) -> list[str]:
     naoEncontrado = f"_O verbete_ *{verbete}* _não foi encontrado._"
 
     if len(sugestao) == 0:
@@ -160,15 +160,15 @@ def buscarSinonimosAntonimos(verbete: str, tree: HtmlElement, tipo: str = "Sinô
     return resultado + lista[-1]
 
 
-def sinonimos(verbete: str, tree: HtmlElement) -> [str]:
+def sinonimos(verbete: str, tree: HtmlElement) -> list[str]:
     return [buscarSinonimosAntonimos(verbete, tree, "Sinônimos")]
 
 
-def antonimos(verbete: str, tree: HtmlElement) -> [str]:
+def antonimos(verbete: str, tree: HtmlElement) -> list[str]:
     return [buscarSinonimosAntonimos(verbete, tree, "Antônimos")]
 
 
-def exemplos(verbete: str, tree: HtmlElement) -> [str]:
+def exemplos(verbete: str, tree: HtmlElement) -> list[str]:
     frases = blocoFrasesExemplos(tree)
     exemplos = blocoFrasesExemplos(tree, "exemplo")
 
@@ -202,7 +202,7 @@ def blocoFrasesExemplos(tree: HtmlElement, tipo: str = "frases") -> str:
     return resultado.strip()
 
 
-def conjugar(verbete: str, tree: HtmlElement) -> [str]:
+def conjugar(verbete: str, tree: HtmlElement) -> list[str]:
     if len(tree.xpath("//div[@id='conjugacao']//node()")) == 0:
         return [f"_O verbete_ *{verbete}* _não tem conjugação disponível._\n_Tente um verbo no_ *infinitivo*."]
 
@@ -250,15 +250,15 @@ def rimasAnagramas(verbete: str, tree: HtmlElement, tipo: str = "Rimas") -> str:
     return resultado + elemento[-1]
 
 
-def rimas(verbete: str, tree: HtmlElement) -> [str]:
+def rimas(verbete: str, tree: HtmlElement) -> list[str]:
     return [rimasAnagramas(verbete, tree, "Rimas")]
 
 
-def anagramas(verbete: str, tree: HtmlElement) -> [str]:
+def anagramas(verbete: str, tree: HtmlElement) -> list[str]:
     return [rimasAnagramas(verbete, tree, "Anagramas")]
 
 
-def tudo(verbete: str, tree: HtmlElement, option: str = None) -> [str]:
+def tudo(verbete: str, tree: HtmlElement, option: str = None) -> list[str]:
     return post(verbete, (
         definir(verbete, tree) +
         sinonimos(verbete, tree) +
