@@ -1,4 +1,4 @@
-FROM python:latest
+FROM python:3.13.1-alpine3.21
 
 COPY requirements.txt /usr/src/app/requirements.txt
 # COPY .env /usr/src/app/.env
