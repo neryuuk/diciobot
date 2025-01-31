@@ -8,4 +8,5 @@ config.json
 Dockerfile
 fly.toml
 img
+pyvenv.cfg
 README.md
