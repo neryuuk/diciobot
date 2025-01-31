@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Python: Current File",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
@@ -11,9 +11,9 @@
     },
     {
       "name": "Python: tw_dicio.py",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
-      "program": "tw_dicio.py",
+      "program": "source/tw_dicio.py",
       "justMyCode": true
     }
   ]

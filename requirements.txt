@@ -1,4 +1,4 @@
-lxml==4.9.3
-python-dotenv==1.0.0
-python-telegram-bot==20.5
-redis==5.0.0
+lxml==5.3.0
+python-dotenv==1.0.1
+python-telegram-bot==21.10
+redis==5.2.1
