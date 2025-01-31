@@ -107,7 +107,7 @@ def blocoSignificado(tree: HtmlElement) -> str:
     for each in titulos:
         titulo = each.split(" ")
     mensagem = f"*{' '.join(titulo[:-1])}* _{titulo[-1]}_\n"
-    for each in tree.xpath("//p[@itemprop='description']/span"):
+    for each in tree.xpath("//p[@class='significado textonovo']/span"):
         if type(each) == HtmlElement:
             content = each.text_content().strip().replace("*", "\\*")
             if "cl" in each.classes:
