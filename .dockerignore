@@ -1,4 +1,3 @@
-# flyctl launch added from .gitignore
 __pycache__
 .dockerignore
 .env
@@ -6,7 +5,9 @@ __pycache__
 .vscode
 config.json
 Dockerfile
+fly.json
 fly.toml
+fly.yaml
 img
 pyvenv.cfg
 README.md
