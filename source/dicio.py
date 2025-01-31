@@ -76,7 +76,7 @@ def definir(verbete: str, tree: HtmlElement) -> [str]:
         definicao += "Significado: Não encontrado."
         return [definicao]
 
-    return [f"{definicao}\n\n{significado}".strip().replace("[", "\[")]
+    return [f"{definicao}\n\n{significado}".strip().replace("[", "\\[")]
 
 
 def blocoDefinicao(tree: HtmlElement) -> str:
@@ -109,7 +109,7 @@ def blocoSignificado(tree: HtmlElement) -> str:
     mensagem = f"*{' '.join(titulo[:-1])}* _{titulo[-1]}_\n"
     for each in tree.xpath("//p[@itemprop='description']/span"):
         if type(each) == HtmlElement:
-            content = each.text_content().strip().replace("*", "\*")
+            content = each.text_content().strip().replace("*", "\\*")
             if "cl" in each.classes:
                 mensagem += f"{content}\n"
             elif "tag" in each.classes:
@@ -225,7 +225,7 @@ def conjugar(verbete: str, tree: HtmlElement) -> [str]:
             resultado += f"*{tempo.find('div').text_content().strip()}*\n"
             tempo.find('div').drop_tree()
             texto = tempo.text_content().strip() + "\n\n"
-            resultado += re.sub(r" {2,}", r" ", texto).replace("*", "\*")
+            resultado += re.sub(r" {2,}", r" ", texto).replace("*", "\\*")
 
     return [resultado.strip()]
 
