@@ -18,7 +18,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Provision flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+        with:
+          version: 0.3.73
       - name: Deploy App to fly.io
         run: flyctl deploy --remote-only
         env:
