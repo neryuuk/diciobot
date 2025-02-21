@@ -21,7 +21,7 @@ jobs:
       - name: Provision flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
         with:
-          version: 0.3.73
+          version: 0.3.85
       - name: Deploy App to fly.io
         run: flyctl deploy --remote-only
         env:

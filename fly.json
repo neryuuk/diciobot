@@ -1,12 +1,6 @@
 {
   "app": "diciobot",
   "primary_region": "gru",
-  "env": {
-    "TELEGRAM_BOT_ID": "@diciobot",
-    "REDIS_HOST": "redis-12161.c270.us-east-1-3.ec2.cloud.redislabs.com",
-    "REDIS_PORT": "12161",
-    "REDIS_USER": "diciobot"
-  },
   "http_service": {
     "auto_start_machines": true,
     "auto_stop_machines": false,
